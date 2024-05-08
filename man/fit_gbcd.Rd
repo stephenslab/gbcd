@@ -23,13 +23,11 @@ fit_gbcd_control_default()
 expression data.}
 
 \item{Kmax}{Positive integer (at least 2) specifying an upper
-bound of the number of GEPs, note that Kmax is approximately but
-often not exactly the final number of GEPs given how GBCD is
-implemented.}
+bound on the number of GEPs. Note that Kmax is approximately but
+often not exactly the final number of GEPs.}
 
 \item{prior}{Nonnegative prior for GEP memberships, usually the
-generalized binary prior, which must be a function defined in the
-ebnm package.}
+generalized binary prior.}
 
 \item{maxiter1}{Positive integer specifying the maximum number of
 backfit iterations during the GEP membership matrix L
@@ -39,28 +37,35 @@ initialization.}
 backfit iterations during the GEP membership matrix L estimation.}
 
 \item{maxiter3}{Positive integer specifying the maximum number of
-backfit iterations during the GEP signature matrix F estimation}
+backfit iterations during the GEP signature matrix F estimation.}
 
-\item{control}{List of control parameters with the following elements:
-\dQuote{warmstart}, a logical indicator specifying whether to use warmstart to initialize the prior g when solving EBNM subproblems,
-  see the ebnm package for details;
-\dQuote{extrapolate}, a logical indicator specifying whether to use extrapolation to accelerate backfitting GEP memberships,
-  see the flashier package for details;
-\dQuote{corr_thres}, a numeric scalar between 0 and 1 such that we only keep l_k whose Pearson correlation with l-tilde_k exceeds corr_thres}
+\item{control}{List of control parameters with the following
+elements: \dQuote{warmstart}, a logical indicator specifying
+whether to use warmstart to initialize the prior g when solving
+EBNM subproblems (see ebnm for details); \dQuote{extrapolate}, a
+logical indicator specifying whether to use extrapolation to
+accelerate backfitting GEP memberships (see flashier for details);
+\dQuote{corr_thres}, a numeric scalar between 0 and 1 such that we
+only keep columns \eqn{l_k} whose Pearson correlation with
+\eqn{\tilde{l}_k} exceeds \dQuote{corr_thres}.}
 
 \item{verbose}{Integer specifying whether and how to display
-progress updates, as described in the flashier package.}
+progress updates, as described in flashier.}
 }
 \value{
 A list including the following elements:
 
 \item{L}{cell x GEP matrix containing the posterior estimates of
-GEP membership L.}
+the GEP membership matrix L.}
 
-\item{F}{List containing the posterior summaries of gene by GEP
-matrix of GEP signature F.}
+\item{F}{List containing the posterior summaries of the GEP
+  signature matrix F.}
 }
 \description{
-Fit generalized binary covariance decomposition (GBCD)
+Fit a generalized binary covariance decomposition (GBCD)
 to single cell RNA-seq data containing multiple tumors.
+}
+\examples{
+# Add a small example here.
+
 }
