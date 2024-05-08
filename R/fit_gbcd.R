@@ -8,23 +8,23 @@
 #' @param Y Cell x gene matrix of normalized and log-transformed gene
 #'   expression data.
 #' 
-#' @param Kmax a positive integer (at least 2) specifying an upper
+#' @param Kmax Positive integer (at least 2) specifying an upper
 #'   bound of the number of GEPs, note that Kmax is approximately but
 #'   often not exactly the final number of GEPs given how GBCD is
 #'   implemented.
 #'  
-#' @param Prior a nonnegative prior for GEP memberships, usually the
+#' @param prior Nonnegative prior for GEP memberships, usually the
 #'   generalized binary prior, which must be a function defined in the
 #'   ebnm package.
 #'   
-#' @param maxiter1 A positive integer specifying the maximum number of
+#' @param maxiter1 Positive integer specifying the maximum number of
 #' backfit iterations during the GEP membership matrix L
 #' initialization.
 #'  
-#' @param maxiter2 A positive integer specifying the maximum number of
+#' @param maxiter2 Positive integer specifying the maximum number of
 #' backfit iterations during the GEP membership matrix L estimation.
 #'   
-#' @param maxiter3 a positive integer specifying the maximum number of
+#' @param maxiter3 Positive integer specifying the maximum number of
 #' backfit iterations during the GEP signature matrix F estimation
 #'   
 #' @param control List of control parameters with the following elements:
@@ -45,10 +45,16 @@
 #' \item{F}{List containing the posterior summaries of gene by GEP
 #' matrix of GEP signature F.}
 #'
+#' @importFrom magrittr %>%
 #' @importFrom Matrix tcrossprod
 #' @importFrom utils modifyList
 #' @importFrom ebnm ebnm_point_laplace
 #' @importFrom ebnm ebnm_generalized_binary
+#' @importFrom flashier flash_init
+#' @importFrom flashier flash_greedy
+#' @importFrom flashier flash_backfit
+#' @importFrom flashier flash_factors_init
+#' @importFrom flashier flash_factors_remove
 #' 
 #' @export
 #' 

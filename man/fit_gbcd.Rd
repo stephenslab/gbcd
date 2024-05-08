@@ -22,19 +22,23 @@ fit_gbcd_control_default()
 \item{Y}{Cell x gene matrix of normalized and log-transformed gene
 expression data.}
 
-\item{Kmax}{a positive integer (at least 2) specifying an upper
+\item{Kmax}{Positive integer (at least 2) specifying an upper
 bound of the number of GEPs, note that Kmax is approximately but
 often not exactly the final number of GEPs given how GBCD is
 implemented.}
 
-\item{maxiter1}{A positive integer specifying the maximum number of
+\item{prior}{Nonnegative prior for GEP memberships, usually the
+generalized binary prior, which must be a function defined in the
+ebnm package.}
+
+\item{maxiter1}{Positive integer specifying the maximum number of
 backfit iterations during the GEP membership matrix L
 initialization.}
 
-\item{maxiter2}{A positive integer specifying the maximum number of
+\item{maxiter2}{Positive integer specifying the maximum number of
 backfit iterations during the GEP membership matrix L estimation.}
 
-\item{maxiter3}{a positive integer specifying the maximum number of
+\item{maxiter3}{Positive integer specifying the maximum number of
 backfit iterations during the GEP signature matrix F estimation}
 
 \item{control}{List of control parameters with the following elements:
@@ -46,10 +50,6 @@ backfit iterations during the GEP signature matrix F estimation}
 
 \item{verbose}{Integer specifying whether and how to display
 progress updates, as described in the flashier package.}
-
-\item{Prior}{a nonnegative prior for GEP memberships, usually the
-generalized binary prior, which must be a function defined in the
-ebnm package.}
 }
 \value{
 A list including the following elements:

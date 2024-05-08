@@ -18,8 +18,11 @@ init_cov_ebnmf <- function(fl, kset = 1:ncol(fl$flash_fit$EF[[1]])) {
 # Fit EBMF to covariance matrix YY' s.t. E[YY'] = LL'+ D, where D =
 # s2*I and I is an identity matrix.
 #
+#' @importFrom magrittr %>%
 #' @importFrom Matrix rowSums
 #' @importFrom Matrix Diagonal
+#' @importFrom flashier flash_update_data
+#' @importFrom flashier flash_backfit
 fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
                             maxiter = 500, tol = NULL, epsilon = 2e-2,
                             verbose = 1) {
@@ -59,6 +62,7 @@ fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
 # Fit EB-SNMF to Y to estimate F, with L previously calculated from
 # GBCD.
 #
+#' @importFrom magrittr %>%
 #' @importFrom stats cor
 #' @importFrom stats lm
 #' @importFrom stats aov
@@ -66,6 +70,10 @@ fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
 #' @importFrom ebnm ebnm_generalized_binary
 #' @importFrom ebnm ebnm_point_laplace
 #' @importFrom ashr ash
+#' @importFrom flashier flash_init
+#' @importFrom flashier flash_factors_init
+#' @importFrom flashier flash_factors_fix
+#' @importFrom flashier flash_backfit
 #' 
 fit_ebmf_to_Y <- function(Y, fit.cov, corr_thres, maxiter) {
     
