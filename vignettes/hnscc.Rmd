@@ -53,13 +53,11 @@ knitr::opts_chunk$set(comment = "#", collapse = TRUE, results = "hold",
 We begin our analysis by loading the needed R packages.
 
 ```{r load-pkgs, message=FALSE, warning=FALSE}
+library(Matrix)
 library(Seurat)
 library(ggplot2)
-library(cowplot)
-library(RColorBrewer)
 library(ggrepel)
 library(pheatmap)
-library(gridExtra)
 library(flashier)
 library(gbcd)
 ```
@@ -91,12 +89,15 @@ head(info)
 Visualize HNSCC data using t-SNE
 --------------------------------
 
-```{r run-tSNE, eval=FALSE}
+```{r run-tSNE}
 hnscc <- CreateSeuratObject(counts = t(Y), project = "HNSCC", meta.data = info)
-hnscc <- FindVariableFeatures(hnscc, selection.method = "vst", nfeatures = 5000)
+hnscc <- FindVariableFeatures(hnscc, selection.method = "vst",
+                              nfeatures = 5000)
 all.genes <- rownames(hnscc)
+hnscc <- NormalizeData(hnscc)
 hnscc <- ScaleData(hnscc, features = all.genes)
-hnscc <- RunPCA(hnscc, features = VariableFeatures(object = hnscc), npcs = 50, verbose = FALSE)
+hnscc <- RunPCA(hnscc, features = VariableFeatures(object = hnscc),
+                npcs = 50, verbose = FALSE)
 hnscc <- RunTSNE(hnscc, dims = 1:50)
 ```
 
@@ -108,10 +109,13 @@ strong patient effects that are typical of cancer data; the major
 structure in the *t*-SNE visualization is the clustering of the cells
 by patient.
 
-```{r plot-tSNE, fig.height=5, fig.width=6, eval=FALSE}
-DimPlot(hnscc, label = TRUE, repel = TRUE, pt.size = 1, reduction = "tsne", group.by = "subject", shape.by = "subtype", cols = subject_col) +
-  guides(shape = guide_legend(override.aes = list(size = 3)), ncol = 1) + theme(text = element_text(size = 12)) +
-  ggtitle("") + scale_shape_manual(values = c(15, 16, 18))
+```{r plot-tSNE, fig.height=5, fig.width=6}
+DimPlot(hnscc, label = TRUE, repel = TRUE, pt.size = 1, reduction = "tsne",
+        group.by = "subject", shape.by = "subtype", cols = subject_col) +
+  guides(shape = guide_legend(override.aes = list(size = 3)), ncol = 1) +
+  scale_shape_manual(values = c(15, 16, 18)) +
+  ggtitle("") +
+  theme(text = element_text(size = 12))
 ```
 
 Apply GBCD to estimate GEP memberships and signatures

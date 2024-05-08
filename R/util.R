@@ -18,7 +18,6 @@ init_cov_ebnmf <- function(fl, kset = 1:ncol(fl$flash_fit$EF[[1]])) {
 # Fit EBMF to covariance matrix YY' s.t. E[YY'] = LL'+ D, where D =
 # s2*I and I is an identity matrix.
 #
-#' @importFrom magrittr %>%
 #' @importFrom Matrix rowSums
 #' @importFrom Matrix Diagonal
 #' @importFrom flashier flash_update_data
@@ -46,8 +45,8 @@ fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
                           S = Matrix::Diagonal(nrow(dat$U), -s2))
     }
     Y2_diff <- sum((data_diag - s2)^2 - (data_diag - old_s2)^2)
-    fl <- fl %>%
-      flash_update_data(dat_minuss2, Y2_diff = Y2_diff) %>%
+    fl <- fl |>
+      flash_update_data(dat_minuss2, Y2_diff = Y2_diff) |>
       flash_backfit(extrapolate = extrapolate, warmstart = warmstart,
                     maxiter = maxiter, tol = tol, verbose = verbose)
     
@@ -62,7 +61,6 @@ fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
 # Fit EB-SNMF to Y to estimate F, with L previously calculated from
 # GBCD.
 #
-#' @importFrom magrittr %>%
 #' @importFrom stats cor
 #' @importFrom stats lm
 #' @importFrom stats aov
@@ -88,12 +86,12 @@ fit_ebmf_to_Y <- function(Y, fit.cov, corr_thres, maxiter) {
   ### data matrix with fixed L estimated from covariance decomposition
   ### above
   init.F <- t(solve(crossprod(fit.L), as.matrix(Matrix::crossprod(fit.L, Y))))
-  fit.snmf <- flash_init(Y, S = 1/sqrt(nrow(Y)), var_type = 2) %>%
+  fit.snmf <- flash_init(Y, S = 1/sqrt(nrow(Y)), var_type = 2) |>
     flash_factors_init(
       init = list(as.matrix(fit.L), as.matrix(init.F)),
       ebnm_fn = c(ebnm_generalized_binary, ebnm_point_laplace)
-    ) %>%
-    flash_factors_fix(kset = 1:ncol(fit.L), which_dim = "loadings") %>%
+    ) |>
+    flash_factors_fix(kset = 1:ncol(fit.L), which_dim = "loadings") |>
     flash_backfit(extrapolate = FALSE, maxiter = maxiter, verbose = 1)
   
   ### calculate the z-score and lfsr of GEP signatures by running

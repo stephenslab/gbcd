@@ -48,8 +48,8 @@
 #'
 #' @examples
 #' # Add a small example here.
-#' 
-#' @importFrom magrittr %>%
+#'
+#' @import Matrix
 #' @importFrom Matrix tcrossprod
 #' @importFrom utils modifyList
 #' @importFrom ebnm ebnm_point_laplace
@@ -88,9 +88,9 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   ### fit EBMF with point laplace prior to covariance matrix without considering the diagonal component
   print("Initialize GEP membership matrix L...")
   start_time = proc.time()
-  fit.cov <- fit.init %>%
-    flash_greedy(Kmax = 1, ebnm_fn = ebnm_point_laplace) %>%
-    flash_greedy(Kmax = Kmax - 1, ebnm_fn = ebnm_point_laplace) %>%
+  fit.cov <- fit.init |>
+    flash_greedy(Kmax = 1, ebnm_fn = ebnm_point_laplace) |>
+    flash_greedy(Kmax = Kmax - 1, ebnm_fn = ebnm_point_laplace) |>
     flash_backfit(maxiter = 25, verbose = verbose)
 
   ### fit EBMF with point laplace prior to covariance matrix with the diagonal component
@@ -103,15 +103,15 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   start_time = proc.time()
   cov.init <- init_cov_ebnmf(fit.cov)
   kmax <- which.max(colSums(cov.init[[1]]))
-  fit.cov <- fit.init %>%
+  fit.cov <- fit.init |>
     flash_factors_init(
       init = lapply(cov.init, function(x) x[, kmax, drop = FALSE]),
       ebnm_fn = ebnm_point_laplace
-    ) %>%
+    ) |>
     flash_factors_init(
       init = lapply(cov.init, function(x) x[, -c(kmax), drop = FALSE]),
       ebnm_fn = prior
-    ) %>%
+    ) |>
     flash_backfit(extrapolate = FALSE, warmstart = warmstart, maxiter = 25, verbose = verbose)
 
   ### keep at most Kmax factors based on proportion of variance explained and refit EB-NMF to covariance matrix

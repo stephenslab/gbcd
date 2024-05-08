@@ -3,7 +3,7 @@ Package: gbcd
 Encoding: UTF-8
 Title: Generalized Binary Covariance Decomposition
 Date: 2024-05-08
-Version: 0.1-12
+Version: 0.1-15
 Authors@R: c(person("Yusha","Liu",role=c("aut","cre"),
                     email="yushaliu@unc.edu"),
              person("Peter","Carbonetto",role="aut"),
@@ -22,24 +22,20 @@ Description: Implements Generalized Binary Covariance Decomposition
     components relevant to disease etiology.
 License: MIT + file LICENSE
 Depends:
-   R (>= 2.10),
-   ebnm
+   R (>= 4.1),
+   ebnm (>= 1.1-26)
 Imports:
    Matrix,
    utils,
    flashier,
-   ashr,
-   magrittr
+   ashr
 Suggests:
     knitr,
     rmarkdown,
     Seurat,
     ggplot2,
-    cowplot,
-    RColorBrewer,
     ggrepel,
-    pheatmap,
-    gridExtra
+    pheatmap
 LazyData: true
 LazyDataCompression: xz
 NeedsCompilation: no
