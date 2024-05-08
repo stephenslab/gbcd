@@ -113,7 +113,6 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   return(res)
 }
 
-
 #' @rdname fit_gbcd
 #'
 #' @export
