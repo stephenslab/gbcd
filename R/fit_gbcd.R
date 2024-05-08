@@ -1,23 +1,31 @@
 #' @rdname fit_gbcd
+#'
+#' @title Fit Generalized Binary Covariance Decomposition
 #' 
-#' @title Fit generalized binary covariance decomposition (GBCD) to single cell RNA-seq data containing multiple tumors
+#' @description Fit generalized binary covariance decomposition (GBCD)
+#' to single cell RNA-seq data containing multiple tumors.
 #' 
-#' @param Y cell by gene matrix of normalized and log-transformed gene expression data
+#' @param Y Cell x gene matrix of normalized and log-transformed gene
+#'   expression data.
 #' 
-#' @param Kmax a positive integer (at least 2) specifying an upper bound of the number of GEPs,
-#'   note that Kmax is approximately but often not exactly the final number of GEPs given how GBCD is implemented
+#' @param Kmax a positive integer (at least 2) specifying an upper
+#'   bound of the number of GEPs, note that Kmax is approximately but
+#'   often not exactly the final number of GEPs given how GBCD is
+#'   implemented.
 #'  
-#' @param prior a nonnegative prior for GEP memberships, usually the generalized binary prior,
-#'   which must be a function defined in the ebnm package
+#' @param Prior a nonnegative prior for GEP memberships, usually the
+#'   generalized binary prior, which must be a function defined in the
+#'   ebnm package.
 #'   
-#' @param maxiter1 a positive integer specifying the maximum number of backfit iterations
-#'   during the GEP membership matrix L initialization
+#' @param maxiter1 A positive integer specifying the maximum number of
+#' backfit iterations during the GEP membership matrix L
+#' initialization.
 #'  
-#' @param maxiter2 a positive integer specifying the maximum number of backfit iterations
-#'   during the GEP membership matrix L estimation   
+#' @param maxiter2 A positive integer specifying the maximum number of
+#' backfit iterations during the GEP membership matrix L estimation.
 #'   
-#' @param maxiter3 a positive integer specifying the maximum number of backfit iterations
-#'   during the GEP signature matrix F estimation
+#' @param maxiter3 a positive integer specifying the maximum number of
+#' backfit iterations during the GEP signature matrix F estimation
 #'   
 #' @param control List of control parameters with the following elements:
 #' \dQuote{warmstart}, a logical indicator specifying whether to use warmstart to initialize the prior g when solving EBNM subproblems,
@@ -26,19 +34,21 @@
 #'   see the flashier package for details;
 #' \dQuote{corr_thres}, a numeric scalar between 0 and 1 such that we only keep l_k whose Pearson correlation with l-tilde_k exceeds corr_thres 
 #' 
-#' @param verbose an integer specifying whether and how to display progress updates,
-#'   as described in the flashier package       
+#' @param verbose Integer specifying whether and how to display
+#' progress updates, as described in the flashier package.
 #'   
 #' @return A list including the following elements:
 #' 
-#' \item{L}{cell by GEP matrix containing the posterior estimates of GEP membership L.}
+#' \item{L}{cell x GEP matrix containing the posterior estimates of
+#' GEP membership L.}
 #' 
-#' \item{F}{List containing the posterior summaries of gene by GEP matrix of GEP signature F.}
+#' \item{F}{List containing the posterior summaries of gene by GEP
+#' matrix of GEP signature F.}
 #'
-#' @import Matrix
-#' @import flashier
-#' @import magrittr
+#' @importFrom Matrix tcrossprod
 #' @importFrom utils modifyList
+#' @importFrom ebnm ebnm_point_laplace
+#' @importFrom ebnm ebnm_generalized_binary
 #' 
 #' @export
 #' 
@@ -69,8 +79,8 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   print("Initialize GEP membership matrix L...")
   start_time = proc.time()
   fit.cov <- fit.init %>%
-    flash_greedy(Kmax = 1, ebnm_fn = ebnm::ebnm_point_laplace) %>%
-    flash_greedy(Kmax = Kmax - 1, ebnm_fn = ebnm::ebnm_point_laplace) %>%
+    flash_greedy(Kmax = 1, ebnm_fn = ebnm_point_laplace) %>%
+    flash_greedy(Kmax = Kmax - 1, ebnm_fn = ebnm_point_laplace) %>%
     flash_backfit(maxiter = 25, verbose = verbose)
 
   ### fit EBMF with point laplace prior to covariance matrix with the diagonal component
@@ -86,7 +96,7 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   fit.cov <- fit.init %>%
     flash_factors_init(
       init = lapply(cov.init, function(x) x[, kmax, drop = FALSE]),
-      ebnm_fn = ebnm::ebnm_point_laplace
+      ebnm_fn = ebnm_point_laplace
     ) %>%
     flash_factors_init(
       init = lapply(cov.init, function(x) x[, -c(kmax), drop = FALSE]),

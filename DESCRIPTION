@@ -11,7 +11,6 @@ Authors@R: c(person("Yusha","Liu",role=c("aut","cre"),
              person("Matthew","Stephens",role="aut"))
 URL: https://github.com/stephenslab/gbcd
 BugReports: https://github.com/stephenslab/gbcd/issues
-Depends: R (>= 4.1.0)
 Description: Implements Generalized Binary Covariance Decomposition
     (GBCD) to dissect tumor transcriptional heterogeneity through analysis
     of multi-tumor single-cell RNA-sequencing data. The presence of strong
@@ -22,10 +21,10 @@ Description: Implements Generalized Binary Covariance Decomposition
     components, including patient-specific, dataset-specific and shared
     components relevant to disease etiology.
 License: MIT + file LICENSE
+Depends: ebnm
 Imports:
    Matrix,
    utils,
-   ebnm,
    flashier,
    ashr,
    magrittr

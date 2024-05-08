@@ -3,7 +3,7 @@
 \name{fit_gbcd}
 \alias{fit_gbcd}
 \alias{fit_gbcd_control_default}
-\title{Fit generalized binary covariance decomposition (GBCD) to single cell RNA-seq data containing multiple tumors}
+\title{Fit Generalized Binary Covariance Decomposition}
 \usage{
 fit_gbcd(
   Y,
@@ -19,22 +19,23 @@ fit_gbcd(
 fit_gbcd_control_default()
 }
 \arguments{
-\item{Y}{cell by gene matrix of normalized and log-transformed gene expression data}
+\item{Y}{Cell x gene matrix of normalized and log-transformed gene
+expression data.}
 
-\item{Kmax}{a positive integer (at least 2) specifying an upper bound of the number of GEPs,
-note that Kmax is approximately but often not exactly the final number of GEPs given how GBCD is implemented}
+\item{Kmax}{a positive integer (at least 2) specifying an upper
+bound of the number of GEPs, note that Kmax is approximately but
+often not exactly the final number of GEPs given how GBCD is
+implemented.}
 
-\item{prior}{a nonnegative prior for GEP memberships, usually the generalized binary prior,
-which must be a function defined in the ebnm package}
+\item{maxiter1}{A positive integer specifying the maximum number of
+backfit iterations during the GEP membership matrix L
+initialization.}
 
-\item{maxiter1}{a positive integer specifying the maximum number of backfit iterations
-during the GEP membership matrix L initialization}
+\item{maxiter2}{A positive integer specifying the maximum number of
+backfit iterations during the GEP membership matrix L estimation.}
 
-\item{maxiter2}{a positive integer specifying the maximum number of backfit iterations
-during the GEP membership matrix L estimation}
-
-\item{maxiter3}{a positive integer specifying the maximum number of backfit iterations
-during the GEP signature matrix F estimation}
+\item{maxiter3}{a positive integer specifying the maximum number of
+backfit iterations during the GEP signature matrix F estimation}
 
 \item{control}{List of control parameters with the following elements:
 \dQuote{warmstart}, a logical indicator specifying whether to use warmstart to initialize the prior g when solving EBNM subproblems,
@@ -43,16 +44,23 @@ during the GEP signature matrix F estimation}
   see the flashier package for details;
 \dQuote{corr_thres}, a numeric scalar between 0 and 1 such that we only keep l_k whose Pearson correlation with l-tilde_k exceeds corr_thres}
 
-\item{verbose}{an integer specifying whether and how to display progress updates,
-as described in the flashier package}
+\item{verbose}{Integer specifying whether and how to display
+progress updates, as described in the flashier package.}
+
+\item{Prior}{a nonnegative prior for GEP memberships, usually the
+generalized binary prior, which must be a function defined in the
+ebnm package.}
 }
 \value{
 A list including the following elements:
 
-\item{L}{cell by GEP matrix containing the posterior estimates of GEP membership L.}
+\item{L}{cell x GEP matrix containing the posterior estimates of
+GEP membership L.}
 
-\item{F}{List containing the posterior summaries of gene by GEP matrix of GEP signature F.}
+\item{F}{List containing the posterior summaries of gene by GEP
+matrix of GEP signature F.}
 }
 \description{
-Fit generalized binary covariance decomposition (GBCD) to single cell RNA-seq data containing multiple tumors
+Fit generalized binary covariance decomposition (GBCD)
+to single cell RNA-seq data containing multiple tumors.
 }
