@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">gbcd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-16</span>
       </span>
     </div>
 
@@ -82,14 +82,14 @@ from multi-tumor single-cell RNA-seq data using GBCD</h1>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>This vignette shows how to apply “generalized binary covariance
-decomposition” (GBCD) to jointly analyze single-cell RNA-seq (scRNA-seq)
-data from <em>malignant cells</em> collected from multiple patients
-and/or studies, using the <a href="https://github.com/stephenslab/gbcd" class="external-link">gbcd</a> package.</p>
+<p>This vignette shows how to apply GBCD (“Generalized Binary Covariance
+Decomposition”) to jointly analyze single-cell RNA-seq (scRNA-seq) data
+from <em>malignant cells</em> collected from multiple patients and/or
+studies.</p>
 <p>GBCD can effectively dissect tumor transcriptional heterogeneity into
 patient/study-specific and shared gene expression programs (GEPs). GBCD
-is “unsupervised” in that, unlike tumor-by-tumor (e.g., <a href="https://www.sciencedirect.com/science/article/pii/S0092867417312709" class="external-link">Puram
-et al. (2017)</a>) and many harmonization approaches (e.g., <a href="https://portals.broadinstitute.org/harmony" class="external-link">Harmony</a>, <a href="https://github.com/welch-lab/liger" class="external-link">Liger</a>), it does not use
+is “unsupervised” in that, unlike tumor-by-tumor (e.g., <a href="https://doi.org/10.1016/j.cell.2017.10.044" class="external-link">Puram et al. 2017</a>)
+and many harmonization approaches (e.g., <a href="https://portals.broadinstitute.org/harmony/" class="external-link">Harmony</a>, <a href="https://github.com/welch-lab/liger/" class="external-link">LIGER</a>), it does not use
 information about which cell comes from which tumor or study. Instead,
 GBCD only requires the combined scRNA-seq data from all tumors, which
 are stored as an <span class="math inline">\(N \times J\)</span> matrix
@@ -97,170 +97,297 @@ are stored as an <span class="math inline">\(N \times J\)</span> matrix
 <span class="math inline">\(y_{ij}\)</span>, where <span class="math inline">\(i=1,\dots,N\)</span> indexes malignant cells and
 <span class="math inline">\(j=1,\dots,J\)</span> indexes genes. In
 typical applications, <span class="math inline">\(Y\)</span> contains
-log-transformed pseudo-count-modified UMI counts (“log-pc counts”).</p>
-<p>GBCD ultimately yields a decomposition of the expression data matrix
-<span class="math inline">\(Y\)</span> into matrices <span class="math inline">\(L\)</span> and <span class="math inline">\(F\)</span> such that <span class="math inline">\(Y
-\approx L F^T\)</span>, or equivalently, <span class="math display">\[y_{ij} \approx \sum_{k=1}^K l_{ik}
-f_{jk}.\]</span> The <span class="math inline">\(K\)</span> components
-should be interpretable as GEPs, with <span class="math inline">\(l_{ik}\)</span> representing the membership of
-cell <span class="math inline">\(i\)</span> in GEP <span class="math inline">\(k\)</span>, and <span class="math inline">\(f_{jk}\)</span> representing the effect of GEP
-<span class="math inline">\(k\)</span> on the expression of gene <span class="math inline">\(j\)</span>. When <span class="math inline">\(y_{ij}\)</span> are log-pc counts, each <span class="math inline">\(f_{jk}\)</span> approximately represents the
-log-fold change (LFC) associated with membership in GEP <span class="math inline">\(k\)</span>, so we refer to the <span class="math inline">\(f_{jk}\)</span> values as LFCs, and to the vector
-of LFCs <span class="math inline">\((f_{1k}, \dots, f_{Jk})^T\)</span>
-as the “signature” of GEP <span class="math inline">\(k\)</span>.</p>
+“shifted log” counts (following the terminology of <a href="https://doi.org/10.1038/s41592-023-01814-1" class="external-link">this paper</a>).</p>
+<p>GBCD yields a decomposition of the expression data matrix <span class="math inline">\(Y\)</span> into matrices <span class="math inline">\(L\)</span> and <span class="math inline">\(F\)</span> such that <span class="math inline">\(Y
+\approx L F^T\)</span>: <span class="math display">\[
+y_{ij} \approx \sum_{k=1}^K l_{ik} f_{jk}.
+\]</span> The elements <span class="math inline">\(l_{ik} \geq
+0\)</span> each represent the membership of cell <span class="math inline">\(i\)</span> in GEP <span class="math inline">\(k\)</span>; <span class="math inline">\(f_{jk}\)</span> represents the effect of GEP <span class="math inline">\(k\)</span> on the expression of gene <span class="math inline">\(j\)</span>. When <span class="math inline">\(y_{ij}\)</span> are shifted log counts, each <span class="math inline">\(f_{jk}\)</span> approximately represents the
+log-fold change (LFC) associated with membership in GEP <span class="math inline">\(k\)</span>, so we refer to the <span class="math inline">\(f_{jk}\)</span> values as LFCs, and we refer to
+the vector of LFCs <span class="math inline">\((f_{1k}, \dots,
+f_{Jk})^T\)</span> as the “signature” of GEP <span class="math inline">\(k\)</span>.</p>
 <p>We begin our analysis by loading the needed R packages.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/" class="external-link">ggrepel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pheatmap</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gridExtra</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/willwerscheid/flashier" class="external-link">flashier</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/stephenslab/gbcd" class="external-link">gbcd</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="the-hnscc-dataset">The HNSCC dataset<a class="anchor" aria-label="anchor" href="#the-hnscc-dataset"></a>
 </h2>
-<p>This dataset contained gene expression data for <span class="math inline">\(n=2,176\)</span> malignant cells collected from
-primary tumors from 10 HNSCC patients and matching lymph node (LN)
-metastases from 5 of these patients. <a href="https://www.sciencedirect.com/science/article/pii/S0092867417312709" class="external-link">Puram
-et al. (2017)</a> found that each of these 10 patients clearly mapped to
-a molecular subtype of HNSCC, whose signatures were previously defined
-by analysis of bulk expression data of 279 <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4311405/" class="external-link">TCGA</a>
-HNSCC tumors.</p>
-<p>Unlike more recently generated data sets, the HNSCC data were not UMI
-counts; rather, they were read counts produced by SMART-Seq2. Following
-<a href="https://www.sciencedirect.com/science/article/pii/S0092867417312709" class="external-link">Puram
-et al. (2017)</a>, we defined the transformed counts as <span class="math inline">\(y_{ij} = \log_2(1 +
+<p>This dataset contained gene expression data for 2,176 malignant cells
+collected from primary tumors from 10 HNSCC patients and matching lymph
+node (LN) metastases from 5 of these patients. <a href="https://doi.org/10.1016/j.cell.2017.10.044" class="external-link">Puram et
+al. (2017)</a> found that each of these 10 patients clearly mapped to a
+molecular subtype of HNSCC, whose signatures were previously defined by
+analysis of bulk expression data of 279 <a href="https://doi.org/10.1038/nature14129" class="external-link">TCGA</a> HNSCC tumors. <a href="https://doi.org/10.1016/j.cell.2017.10.044" class="external-link">Puram et
+al. (2017)</a> defined the transformed counts as <span class="math inline">\(y_{ij} = \log_2(1 +
 \mathrm{TPM}_{ij}/10)\)</span>, where <span class="math inline">\(\mathrm{TPM}_{ij}\)</span> was the
 transcript-per-million (TPM) value for gene <span class="math inline">\(j\)</span> in cell <span class="math inline">\(i\)</span>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hnscc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
+<span><span class="co"># [1]  2176 17113</span></span>
+<span><span class="co">#                                             cell.id lymph.node cancer.cell</span></span>
+<span><span class="co"># HN26_P14_D11_S239_comb       HN26_P14_D11_S239_comb          1           1</span></span>
+<span><span class="co"># HN26_P25_H09_S189_comb       HN26_P25_H09_S189_comb          1           1</span></span>
+<span><span class="co"># HN26_P14_H06_S282_comb       HN26_P14_H06_S282_comb          1           1</span></span>
+<span><span class="co"># HN25_P25_C04_S316_comb       HN25_P25_C04_S316_comb          1           1</span></span>
+<span><span class="co"># HN26_P25_C09_S129_comb       HN26_P25_C09_S129_comb          1           1</span></span>
+<span><span class="co"># HNSCC26_P24_H05_S377_comb HNSCC26_P24_H05_S377_comb          1           1</span></span>
+<span><span class="co">#                           cell.type sample.id   subject  subtype</span></span>
+<span><span class="co"># HN26_P14_D11_S239_comb            0       T26 MEEI26_LN Atypical</span></span>
+<span><span class="co"># HN26_P25_H09_S189_comb            0       T26 MEEI26_LN Atypical</span></span>
+<span><span class="co"># HN26_P14_H06_S282_comb            0       T26 MEEI26_LN Atypical</span></span>
+<span><span class="co"># HN25_P25_C04_S316_comb            0       T25 MEEI25_LN    Basal</span></span>
+<span><span class="co"># HN26_P25_C09_S129_comb            0       T26 MEEI26_LN Atypical</span></span>
+<span><span class="co"># HNSCC26_P24_H05_S377_comb         0       T26 MEEI26_LN Atypical</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="visualize-hnscc-data-using-t-sne">Visualize HNSCC data using t-SNE<a class="anchor" aria-label="anchor" href="#visualize-hnscc-data-using-t-sne"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span>, project <span class="op">=</span> <span class="st">"HNSCC"</span>, meta.data <span class="op">=</span> <span class="va">info</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">hnscc</span>, selection.method <span class="op">=</span> <span class="st">"vst"</span>, nfeatures <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
+<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">hnscc</span>, selection.method <span class="op">=</span> <span class="st">"vst"</span>,</span>
+<span>                              nfeatures <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
 <span><span class="va">all.genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">hnscc</span><span class="op">)</span></span>
+<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="va">hnscc</span><span class="op">)</span></span>
 <span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">hnscc</span>, features <span class="op">=</span> <span class="va">all.genes</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">hnscc</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">hnscc</span><span class="op">)</span>, npcs <span class="op">=</span> <span class="fl">50</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">hnscc</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">hnscc</span><span class="op">)</span>,</span>
+<span>                npcs <span class="op">=</span> <span class="fl">50</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunTSNE.html" class="external-link">RunTSNE</a></span><span class="op">(</span><span class="va">hnscc</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">50</span><span class="op">)</span></span></code></pre></div>
-<p>We plot the 2-D <em>t</em>-SNE embedding of these <span class="math inline">\(n=2,176\)</span> malignant cells, which are
-colored by patient of origin and tumor stage (primary tumor, LN
-metastasis), and shaped by tumor molecular subtype. Due to the presence
-of strong inter-tumor heterogeneity, these cells demonstrate strong
-patient effects that are typical of cancer data; the major structure in
-the <em>t</em>-SNE visualization is the clustering of the cells by
-patient.</p>
+<p>We plot the 2-D <em>t</em>-SNE embedding of the 2,176 malignant
+cells, colored by patient-of-origin and tumor stage (primary tumor, LN
+metastasis), and shaped is varied by tumor molecular subtype. Due to the
+presence of strong inter-tumor heterogeneity, these cells demonstrate
+strong patient effects that are typical of cancer data; the major
+structure in the t-SNE visualization is the clustering of the cells by
+patient:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">hnscc</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, repel <span class="op">=</span> <span class="cn">TRUE</span>, pt.size <span class="op">=</span> <span class="fl">1</span>, reduction <span class="op">=</span> <span class="st">"tsne"</span>, group.by <span class="op">=</span> <span class="st">"subject"</span>, shape.by <span class="op">=</span> <span class="st">"subtype"</span>, cols <span class="op">=</span> <span class="va">subject_col</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span>override.aes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">""</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_shape_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">16</span>, <span class="fl">18</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">hnscc</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, repel <span class="op">=</span> <span class="cn">TRUE</span>, pt.size <span class="op">=</span> <span class="fl">1</span>, reduction <span class="op">=</span> <span class="st">"tsne"</span>,</span>
+<span>        group.by <span class="op">=</span> <span class="st">"subject"</span>, shape.by <span class="op">=</span> <span class="st">"subtype"</span>, cols <span class="op">=</span> <span class="va">subject_col</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span>override.aes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_shape_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">16</span>, <span class="fl">18</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">""</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hnscc_files/figure-html/plot-tSNE-1.png" width="600" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="apply-gbcd-to-estimate-gep-memberships-and-signatures">Apply GBCD to estimate GEP memberships and signatures<a class="anchor" aria-label="anchor" href="#apply-gbcd-to-estimate-gep-memberships-and-signatures"></a>
+<h2 id="estimate-gep-memberships-and-signatures-using-gbcd">Estimate GEP memberships and signatures using GBCD<a class="anchor" aria-label="anchor" href="#estimate-gep-memberships-and-signatures-using-gbcd"></a>
 </h2>
-<p>To fit GBCD, users need to specify <span class="math inline">\(Kmax\)</span>, an upper bound of the number of
-components <span class="math inline">\(K\)</span>, just for
-initialization purposes; the final number of GEPs returned by GBCD is
-close to but often not equal to (and can be larger than) <span class="math inline">\(Kmax\)</span>. Generally speaking, a larger <span class="math inline">\(Kmax\)</span> allows for identifying finer
-structure in tumor transcriptional heterogeneity, at the expense of
-higher computational cost. A good choice of <span class="math inline">\(Kmax\)</span> depends on the complexity of the
-analyzed data (e.g., the number of patients and studies contained), and
-is often unknown in advance. Based on our experience, a value of <span class="math inline">\(Kmax\)</span> between 10 and 40 usually works
-well, and users are encouraged to explore and compare the results for
-different values of <span class="math inline">\(Kmax\)</span>.</p>
+<p>To fit a GBCD model, “Kmax” needs to set. It is an upper bound of the
+number of components, <span class="math inline">\(K\)</span>. This is
+just for initialization purposes; the final number of GEPs returned by
+GBCD is close to but often not equal to (and can be larger than) Kmax.
+Generally speaking, a larger Kmax allows for identifying finer structure
+in tumor transcriptional heterogeneity, at the expense of higher
+computational cost. A good choice of Kmax depends on the complexity of
+the analyzed data (e.g., the number of patients and studies contained),
+and is often unknown in advance. Based on our experience, a value of
+Kmax between 10 and 40 usually works well, and users are encouraged to
+explore and compare the results for different values of Kmax.</p>
 <p>Users also need to specify a prior for GEP membership values. GBCD
 assigns a “generalized binary” (GB) prior independently to each entry of
 <span class="math inline">\(L\)</span>, <span class="math display">\[l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \:
 N_{+} (\mu_k,
 \sigma_k^2),\]</span> where the ratio <span class="math inline">\(\sigma_k/\mu_k\)</span> is fixed at some
-pre-specified small value. In this application we set <span class="math inline">\(\sigma_k/\mu_k = 0.04\)</span> for each <span class="math inline">\(k\)</span>. A smaller ratio is generally
+pre-specified small value. In this application, we set <span class="math inline">\(\sigma_k/\mu_k = 0.04\)</span> for each <span class="math inline">\(k\)</span>. A smaller ratio is generally
 recommended for larger datasets containing more cells, and a value
 between 0.01 to 0.1 usually works well.</p>
-<p>For time reason, in the following call, we set
-<code>Kmax = 12</code>, and set the number of backfit iterations
-respectively to <code>maxiter1 = 100</code> (for initializing <span class="math inline">\(L\)</span>), <code>maxiter2 = 50</code> (for
-estimating <span class="math inline">\(L\)</span>), and
-<code>maxiter3 = 100</code> (for estimating <span class="math inline">\(F\)</span>). However, users are encouraged to
-explore larger values of <code>Kmax</code> and set
-<code>maxiter1</code>, <code>maxiter2</code>, <code>maxiter3</code> to
-their default values, which take longer to run.</p>
+<p>For the purposes of reducing the running time, here we set
+<code>Kmax = 12</code>, and we limit the number of backfitting
+iterations to <code>maxiter1 = 100</code> (for initializing L),
+<code>maxiter2 = 50</code> (for estimating L), and
+<code>maxiter3 = 100</code> (for estimating F).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res.gbcd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_gbcd.html">fit_gbcd</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">Y</span>, Kmax <span class="op">=</span> <span class="fl">12</span>, maxiter1 <span class="op">=</span> <span class="fl">100</span>, maxiter2 <span class="op">=</span> <span class="fl">50</span>, maxiter3 <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>                     prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/flashier/man/flash_ebnm.html" class="external-link">flash_ebnm</a></span><span class="op">(</span>prior_family <span class="op">=</span> <span class="st">"generalized_binary"</span>, scale <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res.gbcd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_gbcd.html">fit_gbcd</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">Y</span>, Kmax <span class="op">=</span> <span class="fl">12</span>, maxiter1 <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>                     maxiter2 <span class="op">=</span> <span class="fl">50</span>, maxiter3 <span class="op">=</span> <span class="fl">100</span>, </span>
+<span>                     prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/flashier/man/flash_ebnm.html" class="external-link">flash_ebnm</a></span><span class="op">(</span>prior_family <span class="op">=</span> <span class="st">"generalized_binary"</span>,</span>
+<span>                                        scale <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># [1] "Form cell by cell covariance matrix..."</span></span>
+<span><span class="co">#    user  system elapsed </span></span>
+<span><span class="co">#  15.221   0.070  15.721 </span></span>
+<span><span class="co"># [1] "Initialize GEP membership matrix L..."</span></span>
+<span><span class="co"># Adding factor 1 to flash object...</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co"># Adding factor 2 to flash object...</span></span>
+<span><span class="co"># Adding factor 3 to flash object...</span></span>
+<span><span class="co"># Adding factor 4 to flash object...</span></span>
+<span><span class="co"># Adding factor 5 to flash object...</span></span>
+<span><span class="co"># Adding factor 6 to flash object...</span></span>
+<span><span class="co"># Adding factor 7 to flash object...</span></span>
+<span><span class="co"># Adding factor 8 to flash object...</span></span>
+<span><span class="co"># Adding factor 9 to flash object...</span></span>
+<span><span class="co"># Adding factor 10 to flash object...</span></span>
+<span><span class="co"># Adding factor 11 to flash object...</span></span>
+<span><span class="co"># Adding factor 12 to flash object...</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co"># Backfitting 12 factors (tolerance: 7.06e-02)...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+04...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+02...</span></span>
+<span><span class="co">#   --Maximum number of iterations reached!</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co"># Backfitting 12 factors (tolerance: 7.06e-02)...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+04...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+02...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+01...</span></span>
+<span><span class="co">#   --Maximum number of iterations reached!</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co">#    user  system elapsed </span></span>
+<span><span class="co">#  34.556   2.997  37.714 </span></span>
+<span><span class="co"># [1] "Estimate GEP membership matrix L..."</span></span>
+<span><span class="co"># Backfitting 23 factors (tolerance: 7.06e-02)...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+05...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+04...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
+<span><span class="co">#   --Maximum number of iterations reached!</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co"># Backfitting 23 factors (tolerance: 7.06e-02)...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+02...</span></span>
+<span><span class="co">#   --Maximum number of iterations reached!</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co">#    user  system elapsed </span></span>
+<span><span class="co">#  63.055   3.311  66.501 </span></span>
+<span><span class="co"># [1] "Estimate GEP signature matrix F..."</span></span>
+<span><span class="co"># Backfitting 23 factors (tolerance: 5.55e-01)...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+02...</span></span>
+<span><span class="co">#   Difference between iterations is within 1.0e+01...</span></span>
+<span><span class="co">#   --Maximum number of iterations reached!</span></span>
+<span><span class="co"># Wrapping up...</span></span>
+<span><span class="co"># Done.</span></span>
+<span><span class="co">#    user  system elapsed </span></span>
+<span><span class="co"># 480.996  24.128 507.953</span></span></code></pre></div>
 <p>Note that users can also specify other nonnegative priors for GEP
-membership values, as long as they are defined in the <a href="https://stephenslab.github.io/ebnm/" class="external-link">ebnm</a> package. For
-example, users can specify a point exponential prior by setting
-<code>prior = ebnm::ebnm_point_exponential</code> in the call to
-<code>fit_gbcd</code>. However, we find that the GB prior usually
+membership values. For example, users can specify a point exponential
+prior by setting <code>prior = ebnm_point_exponential</code> in the call
+to <code>fit_gbcd</code>. However, we find that the GB prior usually
 performs the best empirically to dissect tumor transcriptional
 heterogeneity from multiple samples and/or studies.</p>
-<p>The above call takes about 10 minutes to run on a laptop.</p>
+<p>Note that the above call to <code>fit_gbcd</code> may take 10 minutes
+or longer to complete.</p>
 </div>
 <div class="section level2">
 <h2 id="interpret-gbcd-results-from-the-hnscc-data">Interpret GBCD results from the HNSCC data<a class="anchor" aria-label="anchor" href="#interpret-gbcd-results-from-the-hnscc-data"></a>
 </h2>
 <p>Take a look at a summary of the GBCD results.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">)</span></span>
+<span><span class="co">#   Length Class  Mode   </span></span>
+<span><span class="co"># L 45696  -none- numeric</span></span>
+<span><span class="co"># F     3  -none- list</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="gep-membership-estimates">GEP membership estimates<a class="anchor" aria-label="anchor" href="#gep-membership-estimates"></a>
 </h2>
-<p>We now look at the matrix of GEP membership estimates <span class="math inline">\(L\)</span> with entries <span class="math inline">\(l_{ik}\)</span> representing the membership of
-cell <span class="math inline">\(i\)</span> in GEP <span class="math inline">\(k\)</span>. Here we show the top rows of <span class="math inline">\(L\)</span>.</p>
+<p>We now look at the GEP membership estimates <span class="math inline">\(L\)</span>, in which elements <span class="math inline">\(l_{ik}\)</span> represent membership of cell <span class="math inline">\(i\)</span> in GEP <span class="math inline">\(k\)</span>. For example these are the memberships
+for the first few cells:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Create a heatmap to visualize GEP membership estimates.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#                           Baseline GEP1  GEP2  GEP3  GEP4  GEP5  GEP6  GEP7</span></span>
+<span><span class="co"># HN26_P14_D11_S239_comb       0.735    0 0.000 0.895 0.354 0.000 0.000 0.573</span></span>
+<span><span class="co"># HN26_P25_H09_S189_comb       0.657    0 0.141 0.776 0.000 0.479 0.000 0.617</span></span>
+<span><span class="co"># HN26_P14_H06_S282_comb       0.791    0 0.244 0.710 0.606 0.000 0.000 0.713</span></span>
+<span><span class="co"># HN25_P25_C04_S316_comb       0.412    0 0.661 0.212 0.000 0.649 0.000 0.000</span></span>
+<span><span class="co"># HN26_P25_C09_S129_comb       0.645    0 0.000 0.743 0.000 0.382 0.000 0.733</span></span>
+<span><span class="co"># HNSCC26_P24_H05_S377_comb    0.586    0 0.000 0.739 0.000 0.405 0.345 0.696</span></span>
+<span><span class="co">#                           GEP8  GEP9 GEP10 GEP11 GEP12 GEP13 GEP14 GEP15 GEP16</span></span>
+<span><span class="co"># HN26_P14_D11_S239_comb       0 0.000 0.664     0     0 0.437 0.000 0.000 0.000</span></span>
+<span><span class="co"># HN26_P25_H09_S189_comb       0 0.000 0.000     0     0 0.471 0.000 0.591 0.000</span></span>
+<span><span class="co"># HN26_P14_H06_S282_comb       0 0.000 0.000     0     0 0.452 0.000 0.000 0.585</span></span>
+<span><span class="co"># HN25_P25_C04_S316_comb       0 0.695 0.672     0     0 0.606 0.793 0.670 0.000</span></span>
+<span><span class="co"># HN26_P25_C09_S129_comb       0 0.000 0.000     0     0 0.000 0.000 0.748 0.000</span></span>
+<span><span class="co"># HNSCC26_P24_H05_S377_comb    0 0.000 0.000     0     0 0.000 0.461 0.586 0.000</span></span>
+<span><span class="co">#                           GEP17 GEP18 GEP19 GEP20</span></span>
+<span><span class="co"># HN26_P14_D11_S239_comb        0  0.00     0     0</span></span>
+<span><span class="co"># HN26_P25_H09_S189_comb        0  0.00     0     0</span></span>
+<span><span class="co"># HN26_P14_H06_S282_comb        0  0.36     0     0</span></span>
+<span><span class="co"># HN25_P25_C04_S316_comb        0  0.00     0     0</span></span>
+<span><span class="co"># HN26_P25_C09_S129_comb        0  0.00     0     0</span></span>
+<span><span class="co"># HNSCC26_P24_H05_S377_comb     0  0.00     0     0</span></span></code></pre></div>
+<p>Let’s create a heatmap to visualize GEP membership estimates. First
+we add the sample and molecular subtype annotation of cells to visualize
+the GEP memberships:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">### add the sample and molecular subtype annotation of cells to visualize the GEP memberships</span></span>
-<span><span class="va">anno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>subject<span class="op">=</span><span class="va">info</span><span class="op">$</span><span class="va">subject</span>, subtype<span class="op">=</span><span class="va">info</span><span class="op">$</span><span class="va">subtype</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">anno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>subject<span class="op">=</span><span class="va">info</span><span class="op">$</span><span class="va">subject</span>, subtype<span class="op">=</span><span class="va">info</span><span class="op">$</span><span class="va">subtype</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">anno</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span><span class="op">)</span></span>
 <span><span class="va">anno_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>subject<span class="op">=</span><span class="va">subject_col</span>, subtype<span class="op">=</span><span class="va">subtype_col</span><span class="op">)</span></span>
 <span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gray96"</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
-<span><span class="va">brks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.02</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">### plot the annotated heatmap of GEP memberships</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/pheatmap/man/pheatmap.html" class="external-link">pheatmap</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">anno</span><span class="op">$</span><span class="va">subject</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">]</span>, cluster_rows <span class="op">=</span> <span class="cn">FALSE</span>, cluster_cols <span class="op">=</span> <span class="cn">FALSE</span>, show_rownames <span class="op">=</span> <span class="cn">FALSE</span>, annotation_row <span class="op">=</span> <span class="va">anno</span>, annotation_colors <span class="op">=</span> <span class="va">anno_colors</span>, annotation_names_row <span class="op">=</span> <span class="cn">FALSE</span>, angle_col <span class="op">=</span> <span class="fl">45</span>, fontsize <span class="op">=</span> <span class="fl">10</span>, color <span class="op">=</span> <span class="va">cols</span>, breaks <span class="op">=</span> <span class="va">brks</span>, main <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div>
-<p>This heatmap shows the membership values of the <span class="math inline">\(n=2,176\)</span> cells (rows) for 20 GEPs
-(columns; intercept excluded). Cells are arranged top-to-bottom by tumor
-molecular subtype and patient of origin. Membership values are rescaled
-separately for GEPs so that the maximum membership for each GEP is
-always 1.</p>
+<span><span class="va">brks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.02</span><span class="op">)</span></span></code></pre></div>
+<p>Now we can plot the annotated heatmap of GEP memberships:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pheatmap/man/pheatmap.html" class="external-link">pheatmap</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">anno</span><span class="op">$</span><span class="va">subject</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">]</span>, cluster_rows <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>         cluster_cols <span class="op">=</span> <span class="cn">FALSE</span>, show_rownames <span class="op">=</span> <span class="cn">FALSE</span>, annotation_row <span class="op">=</span> <span class="va">anno</span>,</span>
+<span>         annotation_colors <span class="op">=</span> <span class="va">anno_colors</span>, annotation_names_row <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>         angle_col <span class="op">=</span> <span class="fl">45</span>, fontsize <span class="op">=</span> <span class="fl">9</span>, color <span class="op">=</span> <span class="va">cols</span>, breaks <span class="op">=</span> <span class="va">brks</span>,</span>
+<span>         main <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hnscc_files/figure-html/plot-L-2-1.png" width="720" style="display: block; margin: auto;"></p>
+<p>This heatmap shows the memberships of the 2,176 cells (rows) for the
+20 GEPs (the “baseline” is not included). Cells are arranged
+top-to-bottom by tumor molecular subtype and by patient-of-origin.
+Membership values are rescaled separately for GEPs so that the maximum
+membership value for each GEP is always 1.</p>
 <p>From this heatmap, we see that GEPs 1-3 correspond closely to the
 molecular subtypes previously defined based on bulk RNA-seq data: GEP1
-is largely active only in cells from the 2 classical patients, GEP2 is
-mainly active in cells from the 7 basal patients, and GEP3 is mainly
-active in cells from the 1 atypical patient. This demonstrates that GBCD
-can extract the molecular subtype information <em>de novo</em> from the
-single cell data alone.</p>
+is largely active only in cells from the 2 classical patients; GEP2 is
+mainly active in cells from the 7 basal patients; and GEP3 is mainly
+active in cells from the one atypical patient. This demonstrates that
+GBCD can extract the molecular subtype information <em>de novo</em> from
+the single cell data alone.</p>
 <p>Among other GEPs, some are active predominantly in an individual
 patient and can thus be interpreted as patient-specific GEPs, such as
-GEPs 8,9,11; other GEPs are shared across patients but do not correspond
-to molecular subtypes. The degree of patient-specific (vs. shared across
-patients) expression for each GEP can be quantified using the function
-<code>gep_annotation</code>.</p>
+GEPs 8, 9 and 11; other GEPs are shared across patients but do not
+correspond to molecular subtypes. The degree of patient-specific
+vs. shared expression for each GEP can be quantified using the
+“gep_annotation” function.</p>
 </div>
 <div class="section level2">
 <h2 id="gep-signature-estimates">GEP signature estimates<a class="anchor" aria-label="anchor" href="#gep-signature-estimates"></a>
 </h2>
 <p>We next look at the matrix of GEP signature estimates <span class="math inline">\(F\)</span> with each entry <span class="math inline">\(f_{jk}\)</span> approximately representing the
-<span class="math inline">\(\text{log}_2\)</span>-fold change associated
-with membership in GEP <span class="math inline">\(k\)</span>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Create a volcano plot to visualize the gene signature for a given GEP
-(here we plot GEP2 as an example), which also makes use of measures of
-significance of LFCs produced by GBCD, including <em>z-score</em> and
-<em>local false sign rate</em>, or <a href="https://academic.oup.com/biostatistics/article/18/2/275/2557030" class="external-link"><em>lfsr</em></a>.</p>
+log-fold change associated with membership in GEP <span class="math inline">\(k\)</span> (with the base-2 logarithm).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#              Baseline   GEP1   GEP2   GEP3   GEP4   GEP5   GEP6   GEP7   GEP8</span></span>
+<span><span class="co"># C9orf152        0.000  0.063  0.000  0.004  0.000  0.003  0.000  0.000  0.000</span></span>
+<span><span class="co"># ELMO2           2.057  0.000 -0.469  0.738  0.003 -0.271 -0.065  0.016 -0.050</span></span>
+<span><span class="co"># PNMA1           1.934  0.002 -1.329  0.034 -0.001  0.019 -0.043 -0.018 -0.018</span></span>
+<span><span class="co"># MMP2            0.759 -0.464  2.447 -0.912 -0.005  0.785 -0.597 -0.004 -1.207</span></span>
+<span><span class="co"># TMEM216         2.136  1.050 -0.650  0.021  0.006 -0.012 -0.115 -0.021 -0.002</span></span>
+<span><span class="co"># TRAF3IP2-AS1    0.216  0.293  0.000  0.588  0.001  0.132  0.000  0.003  0.000</span></span>
+<span><span class="co">#               GEP9  GEP10  GEP11  GEP12 GEP13  GEP14  GEP15  GEP16  GEP17</span></span>
+<span><span class="co"># C9orf152     0.000 -0.003 -0.004  0.000 0.003  0.084  0.000  0.001  0.000</span></span>
+<span><span class="co"># ELMO2        0.082  0.005 -0.765 -0.036 0.347 -0.354 -0.565 -0.019 -0.003</span></span>
+<span><span class="co"># PNMA1        2.155  0.065 -0.017  0.339 0.731  0.012 -0.047  0.014 -0.002</span></span>
+<span><span class="co"># MMP2         0.050 -0.031  0.026 -0.868 0.801  0.350 -0.509  0.035 -0.295</span></span>
+<span><span class="co"># TMEM216      1.138 -0.089 -0.396 -0.259 0.191 -0.605 -0.012 -0.428 -0.055</span></span>
+<span><span class="co"># TRAF3IP2-AS1 0.005  0.014  0.010 -0.004 0.026  0.449 -0.002  0.019 -0.001</span></span>
+<span><span class="co">#               GEP18  GEP19  GEP20</span></span>
+<span><span class="co"># C9orf152      0.014 -0.001  0.000</span></span>
+<span><span class="co"># ELMO2        -0.104  0.060  0.019</span></span>
+<span><span class="co"># PNMA1        -0.007 -0.007  0.022</span></span>
+<span><span class="co"># MMP2         -1.499 -0.020  3.791</span></span>
+<span><span class="co"># TMEM216      -0.037 -0.012  0.029</span></span>
+<span><span class="co"># TRAF3IP2-AS1 -0.002  0.042 -0.001</span></span></code></pre></div>
+<p>Here we create a volcano plot to visualize the gene signature for a
+given GEP (using GEP2 as an example). This plot makes use of posterior
+statistics outputted by the <code>fit_gbcd</code> call, including the
+z-scores and the local false sign rates (<a href="https://doi.org/10.1093/biostatistics/kxw041" class="external-link"><em>lfsr</em></a>).</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span><span class="op">)</span>, </span>
 <span>                   lfc <span class="op">=</span> <span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span><span class="op">[</span>, <span class="st">"GEP2"</span><span class="op">]</span>, </span>
 <span>                   z <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">z_score</span><span class="op">[</span>, <span class="st">"GEP2"</span><span class="op">]</span><span class="op">)</span>, </span>
@@ -269,21 +396,99 @@ significance of LFCs produced by GBCD, including <em>z-score</em> and
 <span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">pdat</span>, lfsr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">lfsr</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">rows</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">pdat</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">lfc</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">lfc</span><span class="op">)</span>, <span class="fl">0.998</span><span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="va">z</span> <span class="op">&gt;</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">pdat</span><span class="op">[</span><span class="va">rows</span>, <span class="st">"gene"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
-<span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pdat</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">lfc</span>, y <span class="op">=</span> <span class="va">z</span>, color <span class="op">=</span> <span class="va">lfsr</span>, label <span class="op">=</span> <span class="va">gene</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggrepel.slowkow.com/reference/geom_text_repel.html" class="external-link">geom_text_repel</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"black"</span>, size <span class="op">=</span> <span class="fl">3</span>, segment.color <span class="op">=</span> <span class="st">"black"</span>, segment.size <span class="op">=</span> <span class="fl">0.25</span>, min.segment.length <span class="op">=</span> <span class="fl">0</span>, max.overlaps <span class="op">=</span> <span class="cn">Inf</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggrepel.slowkow.com/reference/geom_text_repel.html" class="external-link">geom_text_repel</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"black"</span>, size <span class="op">=</span> <span class="fl">2.5</span>, segment.color <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>                  segment.size <span class="op">=</span> <span class="fl">0.25</span>, min.segment.length <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>                  max.overlaps <span class="op">=</span> <span class="cn">Inf</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coral"</span>, <span class="st">"orange"</span>, <span class="st">"gold"</span>, <span class="st">"deepskyblue"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"log-fold change"</span>, y <span class="op">=</span> <span class="st">"|posterior z-score|"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span>override.aes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span>, size <span class="op">=</span> <span class="fl">24</span><span class="op">)</span>, axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">20</span><span class="op">)</span>, axis.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">20</span><span class="op">)</span>, legend.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">20</span><span class="op">)</span>, legend.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span>, legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Volcano plot of gene signature for GEP2"</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span>override.aes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title      <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span>,size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>,</span>
+<span>        axis.text       <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>        axis.title      <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>        legend.title    <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>,</span>
+<span>        legend.text     <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>        legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Volcano plot of gene signature for GEP2"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hnscc_files/figure-html/plot-lfc-1.png" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
 <p>This was the version of R and the packages that were used to generate
 these results.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># R version 4.3.3 (2024-02-29)</span></span>
+<span><span class="co"># Platform: aarch64-apple-darwin20 (64-bit)</span></span>
+<span><span class="co"># Running under: macOS Sonoma 14.4.1</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Matrix products: default</span></span>
+<span><span class="co"># BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib </span></span>
+<span><span class="co"># LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># locale:</span></span>
+<span><span class="co"># [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># time zone: America/Chicago</span></span>
+<span><span class="co"># tzcode source: internal</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># attached base packages:</span></span>
+<span><span class="co"># [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># other attached packages:</span></span>
+<span><span class="co">#  [1] gbcd_0.1-16        flashier_1.0.53    ebnm_1.1-26        pheatmap_1.0.12   </span></span>
+<span><span class="co">#  [5] ggrepel_0.9.5      ggplot2_3.5.0      Seurat_5.0.3       SeuratObject_5.0.1</span></span>
+<span><span class="co">#  [9] sp_2.1-4           Matrix_1.6-5      </span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># loaded via a namespace (and not attached):</span></span>
+<span><span class="co">#   [1] RColorBrewer_1.1-3     jsonlite_1.8.8         magrittr_2.0.3        </span></span>
+<span><span class="co">#   [4] spatstat.utils_3.0-4   farver_2.1.1           rmarkdown_2.26        </span></span>
+<span><span class="co">#   [7] fs_1.6.3               ragg_1.2.7             vctrs_0.6.5           </span></span>
+<span><span class="co">#  [10] ROCR_1.0-11            memoise_2.0.1          spatstat.explore_3.2-7</span></span>
+<span><span class="co">#  [13] SQUAREM_2021.1         mixsqp_0.3-54          progress_1.2.3        </span></span>
+<span><span class="co">#  [16] htmltools_0.5.7        truncnorm_1.0-9        sass_0.4.8            </span></span>
+<span><span class="co">#  [19] sctransform_0.4.1      parallelly_1.37.1      KernSmooth_2.23-22    </span></span>
+<span><span class="co">#  [22] bslib_0.6.1            fastTopics_0.6-165     htmlwidgets_1.6.4     </span></span>
+<span><span class="co">#  [25] desc_1.4.3             ica_1.0-3              plyr_1.8.9            </span></span>
+<span><span class="co">#  [28] plotly_4.10.4          zoo_1.8-12             cachem_1.0.8          </span></span>
+<span><span class="co">#  [31] igraph_2.0.3           mime_0.12              lifecycle_1.0.4       </span></span>
+<span><span class="co">#  [34] pkgconfig_2.0.3        R6_2.5.1               fastmap_1.1.1         </span></span>
+<span><span class="co">#  [37] fitdistrplus_1.1-11    future_1.33.2          shiny_1.8.0           </span></span>
+<span><span class="co">#  [40] digest_0.6.34          colorspace_2.1-0       patchwork_1.2.0       </span></span>
+<span><span class="co">#  [43] tensor_1.5             RSpectra_0.16-1        irlba_2.3.5.1         </span></span>
+<span><span class="co">#  [46] textshaping_0.3.7      labeling_0.4.3         invgamma_1.1          </span></span>
+<span><span class="co">#  [49] progressr_0.14.0       fansi_1.0.6            spatstat.sparse_3.0-3 </span></span>
+<span><span class="co">#  [52] deconvolveR_1.2-1      httr_1.4.7             polyclip_1.10-6       </span></span>
+<span><span class="co">#  [55] abind_1.4-5            compiler_4.3.3         horseshoe_0.2.0       </span></span>
+<span><span class="co">#  [58] withr_3.0.0            fastDummies_1.7.3      highr_0.10            </span></span>
+<span><span class="co">#  [61] MASS_7.3-60.0.1        scatterplot3d_0.3-44   gtools_3.9.5          </span></span>
+<span><span class="co">#  [64] tools_4.3.3            trust_0.1-8            lmtest_0.9-40         </span></span>
+<span><span class="co">#  [67] httpuv_1.6.14          future.apply_1.11.2    goftest_1.2-3         </span></span>
+<span><span class="co">#  [70] quadprog_1.5-8         glue_1.7.0             nlme_3.1-164          </span></span>
+<span><span class="co">#  [73] promises_1.2.1         grid_4.3.3             Rtsne_0.17            </span></span>
+<span><span class="co">#  [76] cluster_2.1.6          reshape2_1.4.4         generics_0.1.3        </span></span>
+<span><span class="co">#  [79] gtable_0.3.4           spatstat.data_3.0-4    tidyr_1.3.1           </span></span>
+<span><span class="co">#  [82] hms_1.1.3              data.table_1.15.2      utf8_1.2.4            </span></span>
+<span><span class="co">#  [85] spatstat.geom_3.2-9    RcppAnnoy_0.0.22       RANN_2.6.1            </span></span>
+<span><span class="co">#  [88] pillar_1.9.0           stringr_1.5.1          spam_2.10-0           </span></span>
+<span><span class="co">#  [91] RcppHNSW_0.6.0         later_1.3.2            softImpute_1.4-1      </span></span>
+<span><span class="co">#  [94] splines_4.3.3          dplyr_1.1.4            lattice_0.22-5        </span></span>
+<span><span class="co">#  [97] survival_3.5-8         deldir_2.0-4           tidyselect_1.2.0      </span></span>
+<span><span class="co"># [100] miniUI_0.1.1.1         pbapply_1.7-2          knitr_1.45            </span></span>
+<span><span class="co"># [103] gridExtra_2.3          scattermore_1.2        xfun_0.42             </span></span>
+<span><span class="co"># [106] matrixStats_1.2.0      stringi_1.8.3          lazyeval_0.2.2        </span></span>
+<span><span class="co"># [109] yaml_2.3.8             evaluate_0.23          codetools_0.2-19      </span></span>
+<span><span class="co"># [112] tibble_3.2.1           Polychrome_1.5.1       cli_3.6.2             </span></span>
+<span><span class="co"># [115] RcppParallel_5.1.7     uwot_0.1.16            xtable_1.8-4          </span></span>
+<span><span class="co"># [118] reticulate_1.36.1      systemfonts_1.0.6      munsell_0.5.0         </span></span>
+<span><span class="co"># [121] jquerylib_0.1.4        Rcpp_1.0.12            globals_0.16.3        </span></span>
+<span><span class="co"># [124] spatstat.random_3.2-3  png_0.1-8              parallel_4.3.3        </span></span>
+<span><span class="co"># [127] ellipsis_0.3.2         pkgdown_2.0.7          prettyunits_1.2.0     </span></span>
+<span><span class="co"># [130] dotCall64_1.1-1        listenv_0.9.1          viridisLite_0.4.2     </span></span>
+<span><span class="co"># [133] scales_1.3.0           ggridges_0.5.6         crayon_1.5.2          </span></span>
+<span><span class="co"># [136] leiden_0.4.3.1         purrr_1.0.2            rlang_1.1.3           </span></span>
+<span><span class="co"># [139] ashr_2.2-64            cowplot_1.1.3</span></span></code></pre></div>
 </div>
   </div>
 

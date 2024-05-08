@@ -57,10 +57,11 @@ We begin our analysis by loading the needed R packages.
 
 ```{r load-pkgs, message=FALSE, warning=FALSE}
 library(Matrix)
-library(Seurat)
 library(ggplot2)
+library(cowplot)
 library(ggrepel)
 library(pheatmap)
+library(Rtsne)
 library(flashier)
 library(gbcd)
 ```
@@ -88,18 +89,6 @@ head(info)
 Visualize HNSCC data using t-SNE
 --------------------------------
 
-```{r run-tSNE, message=FALSE, warning=FALSE}
-hnscc <- CreateSeuratObject(counts = t(Y), project = "HNSCC", meta.data = info)
-hnscc <- FindVariableFeatures(hnscc, selection.method = "vst",
-                              nfeatures = 5000)
-all.genes <- rownames(hnscc)
-hnscc <- NormalizeData(hnscc)
-hnscc <- ScaleData(hnscc, features = all.genes)
-hnscc <- RunPCA(hnscc, features = VariableFeatures(object = hnscc),
-                npcs = 50, verbose = FALSE)
-hnscc <- RunTSNE(hnscc, dims = 1:50)
-```
-
 We plot the 2-D *t*-SNE embedding of the 2,176 malignant cells,
 colored by patient-of-origin and tumor stage (primary tumor, LN
 metastasis), and shaped is varied by tumor molecular subtype. Due to
@@ -109,12 +98,16 @@ the major structure in the t-SNE visualization is the clustering of
 the cells by patient:
 
 ```{r plot-tSNE, fig.height=4, fig.width=5}
-DimPlot(hnscc, label = TRUE, repel = TRUE, pt.size = 1, reduction = "tsne",
-        group.by = "subject", shape.by = "subtype", cols = subject_col) +
-  guides(shape = guide_legend(override.aes = list(size = 3)), ncol = 1) +
-  scale_shape_manual(values = c(15, 16, 18)) +
-  ggtitle("") +
-  theme(text = element_text(size = 12))
+set.seed(1)
+cols <- order(apply(Y,2,sd),decreasing = TRUE)
+cols <- cols[1:1000]
+res  <- Rtsne(as.matrix(Y[,cols]),normalize = TRUE)
+colnames(res$Y) <- c("tsne1","tsne2")
+pdat <- cbind(res$Y,info)
+ggplot(pdat,aes(x = tsne1,y = tsne2,color = subject,shape = subtype)) +
+  geom_point() +
+  scale_shape_manual(values = c(15,16,18)) +
+  theme_cowplot(font_size = 10)
 ```
 
 Estimate GEP memberships and signatures using GBCD
@@ -197,11 +190,11 @@ brks <- seq(0, 1, 0.02)
 
 Now we can plot the annotated heatmap of GEP memberships:
 
-```{r plot-L-2, fig.height=6, fig.width=7}
+```{r plot-L-2, fig.height=5, fig.width=6}
 pheatmap(res.gbcd$L[order(anno$subject), -c(1)], cluster_rows = FALSE,
          cluster_cols = FALSE, show_rownames = FALSE, annotation_row = anno,
 		 annotation_colors = anno_colors, annotation_names_row = FALSE,
-		 angle_col = 45, fontsize = 10, color = cols, breaks = brks,
+		 angle_col = 45, fontsize = 9, color = cols, breaks = brks,
 		 main = "")
 ```
 
@@ -252,17 +245,17 @@ pdat <- transform(pdat, lfsr = cut(lfsr, c(-1, 0.001, 0.01, 0.05, Inf)))
 rows  <- with(pdat, which(!(abs(lfc) > quantile(abs(lfc), 0.998) | (z > 10))))
 pdat[rows, "gene"] <- ""
 ggplot(pdat, aes(x = lfc, y = z, color = lfsr, label = gene)) + geom_point() + 
-  geom_text_repel(color = "black", size = 3, segment.color = "black",
+  geom_text_repel(color = "black", size = 2.5, segment.color = "black",
                   segment.size = 0.25, min.segment.length = 0,
 				  max.overlaps = Inf, na.rm = TRUE) +
   scale_color_manual(values = c("coral", "orange", "gold", "deepskyblue")) +
   labs(x = "log-fold change", y = "|posterior z-score|") + 
-  guides(colour = guide_legend(override.aes = list(size = 4))) + 
-  theme(plot.title      = element_text(hjust = 0.5, size = 24),
-        axis.text       = element_text(size = 20),
-		axis.title      = element_text(size = 20),
-		legend.title    = element_text(size = 20),
-		legend.text     = element_text(size = 16),
+  guides(colour = guide_legend(override.aes = list(size = 2))) + 
+  theme(plot.title      = element_text(hjust = 0.5,size = 12),
+        axis.text       = element_text(size = 10),
+		axis.title      = element_text(size = 10),
+		legend.title    = element_text(size = 12),
+		legend.text     = element_text(size = 10),
 		legend.position = "bottom") +
   ggtitle("Volcano plot of gene signature for GEP2")
 ```
