@@ -53,7 +53,7 @@ knitr::opts_chunk$set(comment = "#", collapse = TRUE, results = "hold",
 We begin our analysis by loading the needed R packages.
 
 ```{r load-pkgs, message=FALSE, warning=FALSE}
-# library(Seurat)
+library(Seurat)
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)
