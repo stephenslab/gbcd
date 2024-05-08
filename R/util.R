@@ -13,8 +13,13 @@ init_cov_ebnmf <- function(fl, kset = 1:ncol(fl$flash_fit$EF[[1]])) {
 }
 
 
-### fit EBMF to covariance matrix YY' s.t. E[YY'] = LL'+ D, where D = s2*I and I is an identity matrix
-fit_ebmf_to_YY <- function(dat, fl, extrapolate = TRUE, warmstart = TRUE, maxiter = 500, tol = NULL, epsilon = 2e-2, verbose = 1){
+# Fit EBMF to covariance matrix YY' s.t. E[YY'] = LL'+ D, where D =
+# s2*I and I is an identity matrix.
+#
+#' @importFrom Matrix rowSums
+fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
+                            maxiter = 500, tol = NULL, epsilon = 2e-2,
+                            verbose = 1) {
   if (is.matrix(dat) || inherits(dat, "Matrix")) {
     data_diag <- diag(dat)
   } else {
@@ -47,8 +52,12 @@ fit_ebmf_to_YY <- function(dat, fl, extrapolate = TRUE, warmstart = TRUE, maxite
   return(list(dat = dat, fl = fl, s2 = s2))
 }
 
-
-### fit EB-SNMF to Y to estimate F, with L previously calculated from GBCD
+# Fit EB-SNMF to Y to estimate F, with L previously calculated from
+# GBCD.
+#
+#' @importFrom stats cor
+#' @importFrom stats lm
+#' @importFrom stats aov
 fit_ebmf_to_Y <- function(Y, fit.cov, corr_thres, maxiter){
   ### scale GEP membership estimates to 0-1 scale, and calculate Pearson correlations between L and L-tilde
   k.order <- order(fit.cov$pve, decreasing = TRUE)

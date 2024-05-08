@@ -1,17 +1,25 @@
 #' @rdname gep_annotation
+#'
+#' @title Annotate GEPs 
 #' 
-#' @title Annotate the GEPs produced by GBCD using the patient identity information of cells
+#' @description Annotate the GEPs produced by GBCD using the patient
+#'   identity information of cells
 #' 
-#' @param L cell by GEP matrix of GEP membership returned by \code{\link{fit_gbcd}}.
+#' @param L cell x GEP matrix of GEP membership returned by
+#'   \code{\link{fit_gbcd}}.
 #' 
-#' @param metadata data frame containing at least a column ``subject`` indicating the patient identity of cells.
-#'   Each row contains a cell and the rownames must match those of \code{L}.
+#' @param metadata data frame containing at least a column
+#'   \dQuote{subject} indicating the patient identity of cells. Each
+#'   row contains a cell and the rownames must match those of \code{L}.
 #'  
-#' @return A data frame containing GEPs in rows and the following two columns:
-#'   the column ``patient_specific`` reflects the degree of patient-specific expression of a GEP,
-#'   and larger values indicate a GEP is more patient-specific rather than expressed in multiple patients.
-#'   the column ``between_patient_variation`` quantifies how strongly a GEP's memberships vary between 
-#'   patients as opposed to within patients, and larger values indicate a GEP has larger between- than within-patient variation. 
+#' @return A data frame containing GEPs in rows and the following two
+#'   columns: the column \dQuote{patient_specific} reflects the degree
+#'   of patient-specific expression of a GEP, and larger values indicate
+#'   a GEP is more patient-specific rather than expressed in multiple
+#'   patients. The column \dQuote{between_patient_variation} quantifies
+#'   how strongly a GEP's memberships vary between patients as opposed
+#'   to within patients, and larger values indicate a GEP has larger
+#'   between- than within-patient variation.
 #'  
 #' @export
 #' 

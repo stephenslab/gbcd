@@ -2,23 +2,29 @@
 % Please edit documentation in R/gep_annotation.R
 \name{gep_annotation}
 \alias{gep_annotation}
-\title{Annotate the GEPs produced by GBCD using the patient identity information of cells}
+\title{Annotate GEPs}
 \usage{
 gep_annotation(L, metadata)
 }
 \arguments{
-\item{L}{cell by GEP matrix of GEP membership returned by \code{\link{fit_gbcd}}.}
+\item{L}{cell by GEP matrix of GEP membership returned by
+\code{\link{fit_gbcd}}.}
 
-\item{metadata}{data frame containing at least a column ``subject`` indicating the patient identity of cells.
-Each row contains a cell and the rownames must match those of \code{L}.}
+\item{metadata}{data frame containing at least a column
+\dQuote{subject} indicating the patient identity of cells. Each
+row contains a cell and the rownames must match those of \code{L}.}
 }
 \value{
-A data frame containing GEPs in rows and the following two columns:
-  the column ``patient_specific`` reflects the degree of patient-specific expression of a GEP,
-  and larger values indicate a GEP is more patient-specific rather than expressed in multiple patients.
-  the column ``between_patient_variation`` quantifies how strongly a GEP's memberships vary between 
-  patients as opposed to within patients, and larger values indicate a GEP has larger between- than within-patient variation.
+A data frame containing GEPs in rows and the following two
+  columns: the column \dQuote{patient_specific} reflects the degree of
+  patient-specific expression of a GEP, and larger values indicate a
+  GEP is more patient-specific rather than expressed in multiple
+  patients.  the column \dQuote{between_patient_variation} quantifies how
+  strongly a GEP's memberships vary between patients as opposed to
+  within patients, and larger values indicate a GEP has larger
+  between- than within-patient variation.
 }
 \description{
-Annotate the GEPs produced by GBCD using the patient identity information of cells
+Annotate the GEPs produced by GBCD using the patient
+  identity information of cells
 }
