@@ -7,7 +7,7 @@
 gep_annotation(L, metadata)
 }
 \arguments{
-\item{L}{cell by GEP matrix of GEP membership returned by
+\item{L}{cell x GEP matrix of GEP membership returned by
 \code{\link{fit_gbcd}}.}
 
 \item{metadata}{data frame containing at least a column
@@ -16,12 +16,12 @@ row contains a cell and the rownames must match those of \code{L}.}
 }
 \value{
 A data frame containing GEPs in rows and the following two
-  columns: the column \dQuote{patient_specific} reflects the degree of
-  patient-specific expression of a GEP, and larger values indicate a
-  GEP is more patient-specific rather than expressed in multiple
-  patients.  the column \dQuote{between_patient_variation} quantifies how
-  strongly a GEP's memberships vary between patients as opposed to
-  within patients, and larger values indicate a GEP has larger
+  columns: the column \dQuote{patient_specific} reflects the degree
+  of patient-specific expression of a GEP, and larger values indicate
+  a GEP is more patient-specific rather than expressed in multiple
+  patients. The column \dQuote{between_patient_variation} quantifies
+  how strongly a GEP's memberships vary between patients as opposed
+  to within patients, and larger values indicate a GEP has larger
   between- than within-patient variation.
 }
 \description{
