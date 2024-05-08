@@ -14,7 +14,7 @@ repository useful for your work, please cite:
 
 > Y. Liu, P. Carbonetto, J. Willwerscheid, S. A. Oakes, K. F. Macleod
 > and M. Stephens (2023). [Dissecting tumor transcriptional
-> heterogeneity, from single-cell RNA-seq data by generalized binary
+> heterogeneity from single-cell RNA-seq data by generalized binary
 > covariance decomposition.][gbcd-biorxiv] bioRxiv 2023.08.15.553436.
 
 ## Quick Start
