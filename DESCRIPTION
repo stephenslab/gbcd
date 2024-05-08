@@ -1,0 +1,30 @@
+Type: Package
+Package: gbcd
+Title: Generalized Binary Covariance Decomposition
+Version: 0.0.0.9000
+Authors@R: c(person("Yusha","Liu",role=c("aut","cre"),
+                    email="yushaliu@unc.edu"),
+             person("Peter","Carbonetto",role="aut"),
+             person("Jason","Willwerscheid",role="aut"),
+             person("Matthew","Stephens",role="aut"))
+Depends: R (>= 4.1.0)
+Description: Implements Generalized Binary Covariance Decomposition (GBCD) to dissect 
+             tumor transcriptional heterogeneity through analysis of multi-tumor 
+             single-cell RNA-sequencing data. The presence of strong inter-tumor 
+             heterogeneity often obscures patterns of transcriptional variations 
+             that are shared across tumors and may characterize clinically relevent 
+             molecular subtypes or cellular states. GBCD decomposes transcriptional 
+             heterogeneity into interpretable components, including patient-specific, 
+             dataset-specific and shared components relevant to disease etiology.           
+License: MIT + file LICENSE
+Imports:
+   Matrix,
+   utils,
+   ebnm,
+   flashier,
+   ashr,
+   magrittr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Remotes: stephens999/ashr
