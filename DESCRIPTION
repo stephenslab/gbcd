@@ -2,12 +2,15 @@ Type: Package
 Package: gbcd
 Encoding: UTF-8
 Title: Generalized Binary Covariance Decomposition
+Date: 2024-05-08
 Version: 0.1-1
 Authors@R: c(person("Yusha","Liu",role=c("aut","cre"),
                     email="yushaliu@unc.edu"),
              person("Peter","Carbonetto",role="aut"),
              person("Jason","Willwerscheid",role="aut"),
              person("Matthew","Stephens",role="aut"))
+URL: https://github.com/stephenslab/gbcd
+BugReports: https://github.com/stephenslab/gbcd/issues
 Depends: R (>= 4.1.0)
 Description: Implements Generalized Binary Covariance Decomposition
     (GBCD) to dissect tumor transcriptional heterogeneity through analysis
@@ -26,6 +29,10 @@ Imports:
    flashier,
    ashr,
    magrittr
+LazyData: true
+LazyDataCompression: xz
+NeedsCompilation: no
+VignetteBuilder: knitr
 RoxygenNote: 7.2.3
 Remotes:
    stephens999/ashr,
