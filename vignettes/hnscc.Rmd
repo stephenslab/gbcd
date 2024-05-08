@@ -1,4 +1,4 @@
-s---
+---
 title: "Dissecting tumor transcriptional heterogeneity from multi-tumor single-cell RNA-seq data using GBCD"
 author: Yusha Liu
 date: "`r Sys.Date()`"
@@ -120,17 +120,17 @@ DimPlot(hnscc, label = TRUE, repel = TRUE, pt.size = 1, reduction = "tsne",
 Estimate GEP memberships and signatures using GBCD
 --------------------------------------------------
 
-To fit GBCD, users need to specify "Kmax", an upper bound of the
-number of components, $K$. This is just for initialization purposes;
-the final number of GEPs returned by GBCD is close to but often not
-equal to (and can be larger than) Kmax. Generally speaking, a larger
-Kmax allows for identifying finer structure in tumor transcriptional
-heterogeneity, at the expense of higher computational cost. A good
-choice of Kmax depends on the complexity of the analyzed data (e.g.,
-the number of patients and studies contained), and is often unknown in
-advance. Based on our experience, a value of Kmax between 10 and 40
-usually works well, and users are encouraged to explore and compare
-the results for different values of Kmax.
+To fit a GBCD model, "Kmax" needs to set. It is an upper bound of
+the number of components, $K$. This is just for initialization
+purposes; the final number of GEPs returned by GBCD is close to but
+often not equal to (and can be larger than) Kmax. Generally speaking,
+a larger Kmax allows for identifying finer structure in tumor
+transcriptional heterogeneity, at the expense of higher computational
+cost. A good choice of Kmax depends on the complexity of the analyzed
+data (e.g., the number of patients and studies contained), and is
+often unknown in advance. Based on our experience, a value of Kmax
+between 10 and 40 usually works well, and users are encouraged to
+explore and compare the results for different values of Kmax.
 
 Users also need to specify a prior for GEP membership values. GBCD
 assigns a "generalized binary" (GB) prior independently to each entry
@@ -143,7 +143,7 @@ usually works well.
 
 For the purposes of reducing the running time, here we set `Kmax =
 12`, and we limit the number of backfitting iterations to `maxiter1 =
-100` (for initializing $L$), `maxiter2 = 50` (for estimating L), and
+100` (for initializing L), `maxiter2 = 50` (for estimating L), and
 `maxiter3 = 100` (for estimating F).
 
 ```{r fit-gbcd, warning=FALSE}
@@ -230,19 +230,19 @@ GEP signature estimates
 -----------------------
 
 We next look at the matrix of GEP signature estimates $F$ with each
-entry $f_{jk}$ approximately representing the $\text{log}_2$-fold
-change associated with membership in GEP $k$.
+entry $f_{jk}$ approximately representing the log-fold
+change associated with membership in GEP $k$ (with the base-2 logarithm).
 
 ```{r summary-lfc}
 head(round(res.gbcd$F$lfc, 3))
 ```
 
-Create a volcano plot to visualize the gene signature for a given GEP
-(here we plot GEP2 as an example), which also makes use of measures of
-significance of LFCs produced by GBCD, including *z-score* and *local
-false sign rate*, or [*lfsr*][lfsr].
+Here we create a volcano plot to visualize the gene signature for a
+given GEP (using GEP2 as an example). This plot makes use of
+posterior statistics outputted by the `fit_gbcd` call, including the z-scores
+and the local false sign rates ([*lfsr*][lfsr]).
 
-```{r plot-lfc, fig.height=7.5, fig.width=11}
+```{r plot-lfc, fig.height=5, fig.width=6}
 pdat <- data.frame(gene = rownames(res.gbcd$F$lfc), 
                    lfc = res.gbcd$F$lfc[, "GEP2"], 
                    z = abs(res.gbcd$F$z_score[, "GEP2"]), 
@@ -251,13 +251,20 @@ pdat <- data.frame(gene = rownames(res.gbcd$F$lfc),
 pdat <- transform(pdat, lfsr = cut(lfsr, c(-1, 0.001, 0.01, 0.05, Inf)))
 rows  <- with(pdat, which(!(abs(lfc) > quantile(abs(lfc), 0.998) | (z > 10))))
 pdat[rows, "gene"] <- ""
-
 ggplot(pdat, aes(x = lfc, y = z, color = lfsr, label = gene)) + geom_point() + 
-  geom_text_repel(color = "black", size = 3, segment.color = "black", segment.size = 0.25, min.segment.length = 0, max.overlaps = Inf, na.rm = TRUE) +
+  geom_text_repel(color = "black", size = 3, segment.color = "black",
+                  segment.size = 0.25, min.segment.length = 0,
+				  max.overlaps = Inf, na.rm = TRUE) +
   scale_color_manual(values = c("coral", "orange", "gold", "deepskyblue")) +
   labs(x = "log-fold change", y = "|posterior z-score|") + 
   guides(colour = guide_legend(override.aes = list(size = 4))) + 
-  theme(plot.title = element_text(hjust = 0.5, size = 24), axis.text = element_text(size = 20), axis.title = element_text(size = 20), legend.title = element_text(size = 20), legend.text = element_text(size = 16), legend.position = "bottom") + ggtitle("Volcano plot of gene signature for GEP2")
+  theme(plot.title      = element_text(hjust = 0.5, size = 24),
+        axis.text       = element_text(size = 20),
+		axis.title      = element_text(size = 20),
+		legend.title    = element_text(size = 20),
+		legend.text     = element_text(size = 16),
+		legend.position = "bottom") +
+  ggtitle("Volcano plot of gene signature for GEP2")
 ```
 
 Session info
