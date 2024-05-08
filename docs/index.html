@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">gbcd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-17</span>
       </span>
     </div>
 
@@ -76,7 +76,25 @@
 <div class="section level1">
 <div class="page-header"><h1 id="gbcd">gbcd<a class="anchor" aria-label="anchor" href="#gbcd"></a>
 </h1></div>
-<p>R package for generalized binary covariance decomposition.</p>
+<p>R package implementing the Generalized Binary Covariance Decomposition (GBCD) method for dissecting tumor transcriptional heterogeneity from multi-tumor single-cell RNA-sequencing data.</p>
+<p>If you find a bug, or you have a question or feedback on this software, please post an <a href="https://github.com/stephenslab/gbcd/issues" class="external-link">issue</a>.</p>
+<div class="section level2">
+<h2 id="citing-this-work">Citing this work<a class="anchor" aria-label="anchor" href="#citing-this-work"></a>
+</h2>
+<p>If you find the gbcd R package or any of the source code in this repository useful for your work, please cite:</p>
+<blockquote>
+<p>Y. Liu, P. Carbonetto, J. Willwerscheid, S. A. Oakes, K. F. Macleod and M. Stephens (2023). <a href="https://doi.org/10.1101/2023.08.15.553436" class="external-link">Dissecting tumor transcriptional heterogeneity from single-cell RNA-seq data by generalized binary covariance decomposition.</a> bioRxiv 2023.08.15.553436.</p>
+</blockquote>
+</div>
+<div class="section level2">
+<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h2>
+<p>Install and load the package from GitHub:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"stephenslab/gbcd"</span><span class="op">)</span></span></code></pre></div>
+<p>See the <a href="https://stephenslab.github.io/gbcd/" class="external-link">package documentation</a> and the <a href="https://stephenslab.github.io/gbcd/articles/hnscc.html" class="external-link">vignette</a> for more information.</p>
+</div>
 </div>
   </div>
 

@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">gbcd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-16</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-17</span>
       </span>
     </div>
 
@@ -109,10 +109,11 @@ f_{Jk})^T\)</span> as the “signature” of GEP <span class="math inline">\(k\)
 <p>We begin our analysis by loading the needed R packages.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/" class="external-link">ggrepel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pheatmap</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jkrijthe/Rtsne" class="external-link">Rtsne</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/willwerscheid/flashier" class="external-link">flashier</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/stephenslab/gbcd" class="external-link">gbcd</a></span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -151,16 +152,6 @@ transcript-per-million (TPM) value for gene <span class="math inline">\(j\)</spa
 <div class="section level2">
 <h2 id="visualize-hnscc-data-using-t-sne">Visualize HNSCC data using t-SNE<a class="anchor" aria-label="anchor" href="#visualize-hnscc-data-using-t-sne"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span>, project <span class="op">=</span> <span class="st">"HNSCC"</span>, meta.data <span class="op">=</span> <span class="va">info</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">hnscc</span>, selection.method <span class="op">=</span> <span class="st">"vst"</span>,</span>
-<span>                              nfeatures <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
-<span><span class="va">all.genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">hnscc</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="va">hnscc</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">hnscc</span>, features <span class="op">=</span> <span class="va">all.genes</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">hnscc</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">hnscc</span><span class="op">)</span>,</span>
-<span>                npcs <span class="op">=</span> <span class="fl">50</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">hnscc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunTSNE.html" class="external-link">RunTSNE</a></span><span class="op">(</span><span class="va">hnscc</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">50</span><span class="op">)</span></span></code></pre></div>
 <p>We plot the 2-D <em>t</em>-SNE embedding of the 2,176 malignant
 cells, colored by patient-of-origin and tumor stage (primary tumor, LN
 metastasis), and shaped is varied by tumor molecular subtype. Due to the
@@ -168,13 +159,17 @@ presence of strong inter-tumor heterogeneity, these cells demonstrate
 strong patient effects that are typical of cancer data; the major
 structure in the t-SNE visualization is the clustering of the cells by
 patient:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">hnscc</span>, label <span class="op">=</span> <span class="cn">TRUE</span>, repel <span class="op">=</span> <span class="cn">TRUE</span>, pt.size <span class="op">=</span> <span class="fl">1</span>, reduction <span class="op">=</span> <span class="st">"tsne"</span>,</span>
-<span>        group.by <span class="op">=</span> <span class="st">"subject"</span>, shape.by <span class="op">=</span> <span class="st">"subtype"</span>, cols <span class="op">=</span> <span class="va">subject_col</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span>override.aes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_shape_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">16</span>, <span class="fl">18</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">""</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">Y</span>,<span class="fl">2</span>,<span class="va">sd</span><span class="op">)</span>,decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="va">cols</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">1000</span><span class="op">]</span></span>
+<span><span class="va">res</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Rtsne/man/Rtsne.html" class="external-link">Rtsne</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">Y</span><span class="op">[</span>,<span class="va">cols</span><span class="op">]</span><span class="op">)</span>,normalize <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">Y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tsne1"</span>,<span class="st">"tsne2"</span><span class="op">)</span></span>
+<span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">Y</span>,<span class="va">info</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pdat</span>,<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">tsne1</span>,y <span class="op">=</span> <span class="va">tsne2</span>,color <span class="op">=</span> <span class="va">subject</span>,shape <span class="op">=</span> <span class="va">subtype</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_shape_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>,<span class="fl">16</span>,<span class="fl">18</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span>font_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <p><img src="hnscc_files/figure-html/plot-tSNE-1.png" width="600" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -204,14 +199,14 @@ between 0.01 to 0.1 usually works well.</p>
 iterations to <code>maxiter1 = 100</code> (for initializing L),
 <code>maxiter2 = 50</code> (for estimating L), and
 <code>maxiter3 = 100</code> (for estimating F).</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res.gbcd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_gbcd.html">fit_gbcd</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">Y</span>, Kmax <span class="op">=</span> <span class="fl">12</span>, maxiter1 <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>                     maxiter2 <span class="op">=</span> <span class="fl">50</span>, maxiter3 <span class="op">=</span> <span class="fl">100</span>, </span>
 <span>                     prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/flashier/man/flash_ebnm.html" class="external-link">flash_ebnm</a></span><span class="op">(</span>prior_family <span class="op">=</span> <span class="st">"generalized_binary"</span>,</span>
 <span>                                        scale <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># [1] "Form cell by cell covariance matrix..."</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  15.221   0.070  15.721 </span></span>
+<span><span class="co">#  15.469   0.072  15.908 </span></span>
 <span><span class="co"># [1] "Initialize GEP membership matrix L..."</span></span>
 <span><span class="co"># Adding factor 1 to flash object...</span></span>
 <span><span class="co"># Wrapping up...</span></span>
@@ -245,7 +240,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  34.556   2.997  37.714 </span></span>
+<span><span class="co">#  35.163   2.689  38.202 </span></span>
 <span><span class="co"># [1] "Estimate GEP membership matrix L..."</span></span>
 <span><span class="co"># Backfitting 23 factors (tolerance: 7.06e-02)...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+05...</span></span>
@@ -261,7 +256,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  63.055   3.311  66.501 </span></span>
+<span><span class="co">#  64.672   3.376  68.668 </span></span>
 <span><span class="co"># [1] "Estimate GEP signature matrix F..."</span></span>
 <span><span class="co"># Backfitting 23 factors (tolerance: 5.55e-01)...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
@@ -271,7 +266,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co"># 480.996  24.128 507.953</span></span></code></pre></div>
+<span><span class="co"># 398.986  20.880 424.752</span></span></code></pre></div>
 <p>Note that users can also specify other nonnegative priors for GEP
 membership values. For example, users can specify a point exponential
 prior by setting <code>prior = ebnm_point_exponential</code> in the call
@@ -285,7 +280,7 @@ or longer to complete.</p>
 <h2 id="interpret-gbcd-results-from-the-hnscc-data">Interpret GBCD results from the HNSCC data<a class="anchor" aria-label="anchor" href="#interpret-gbcd-results-from-the-hnscc-data"></a>
 </h2>
 <p>Take a look at a summary of the GBCD results.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">)</span></span>
 <span><span class="co">#   Length Class  Mode   </span></span>
 <span><span class="co"># L 45696  -none- numeric</span></span>
@@ -296,7 +291,7 @@ or longer to complete.</p>
 </h2>
 <p>We now look at the GEP membership estimates <span class="math inline">\(L\)</span>, in which elements <span class="math inline">\(l_{ik}\)</span> represent membership of cell <span class="math inline">\(i\)</span> in GEP <span class="math inline">\(k\)</span>. For example these are the memberships
 for the first few cells:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#                           Baseline GEP1  GEP2  GEP3  GEP4  GEP5  GEP6  GEP7</span></span>
 <span><span class="co"># HN26_P14_D11_S239_comb       0.735    0 0.000 0.895 0.354 0.000 0.000 0.573</span></span>
@@ -322,14 +317,14 @@ for the first few cells:</p>
 <p>Let’s create a heatmap to visualize GEP membership estimates. First
 we add the sample and molecular subtype annotation of cells to visualize
 the GEP memberships:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">anno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>subject<span class="op">=</span><span class="va">info</span><span class="op">$</span><span class="va">subject</span>, subtype<span class="op">=</span><span class="va">info</span><span class="op">$</span><span class="va">subtype</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">anno</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span><span class="op">)</span></span>
 <span><span class="va">anno_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>subject<span class="op">=</span><span class="va">subject_col</span>, subtype<span class="op">=</span><span class="va">subtype_col</span><span class="op">)</span></span>
 <span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gray96"</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
 <span><span class="va">brks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.02</span><span class="op">)</span></span></code></pre></div>
 <p>Now we can plot the annotated heatmap of GEP memberships:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pheatmap/man/pheatmap.html" class="external-link">pheatmap</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="va">L</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">anno</span><span class="op">$</span><span class="va">subject</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">]</span>, cluster_rows <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>         cluster_cols <span class="op">=</span> <span class="cn">FALSE</span>, show_rownames <span class="op">=</span> <span class="cn">FALSE</span>, annotation_row <span class="op">=</span> <span class="va">anno</span>,</span>
 <span>         annotation_colors <span class="op">=</span> <span class="va">anno_colors</span>, annotation_names_row <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -360,7 +355,7 @@ vs. shared expression for each GEP can be quantified using the
 </h2>
 <p>We next look at the matrix of GEP signature estimates <span class="math inline">\(F\)</span> with each entry <span class="math inline">\(f_{jk}\)</span> approximately representing the
 log-fold change associated with membership in GEP <span class="math inline">\(k\)</span> (with the base-2 logarithm).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#              Baseline   GEP1   GEP2   GEP3   GEP4   GEP5   GEP6   GEP7   GEP8</span></span>
 <span><span class="co"># C9orf152        0.000  0.063  0.000  0.004  0.000  0.003  0.000  0.000  0.000</span></span>
@@ -387,7 +382,7 @@ log-fold change associated with membership in GEP <span class="math inline">\(k\
 given GEP (using GEP2 as an example). This plot makes use of posterior
 statistics outputted by the <code>fit_gbcd</code> call, including the
 z-scores and the local false sign rates (<a href="https://doi.org/10.1093/biostatistics/kxw041" class="external-link"><em>lfsr</em></a>).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span><span class="op">)</span>, </span>
 <span>                   lfc <span class="op">=</span> <span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span><span class="op">[</span>, <span class="st">"GEP2"</span><span class="op">]</span>, </span>
 <span>                   z <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">z_score</span><span class="op">[</span>, <span class="st">"GEP2"</span><span class="op">]</span><span class="op">)</span>, </span>
@@ -417,7 +412,7 @@ z-scores and the local false sign rates (<a href="https://doi.org/10.1093/biosta
 </h2>
 <p>This was the version of R and the packages that were used to generate
 these results.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># R version 4.3.3 (2024-02-29)</span></span>
 <span><span class="co"># Platform: aarch64-apple-darwin20 (64-bit)</span></span>
@@ -437,58 +432,38 @@ these results.</p>
 <span><span class="co"># [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co"># </span></span>
 <span><span class="co"># other attached packages:</span></span>
-<span><span class="co">#  [1] gbcd_0.1-16        flashier_1.0.53    ebnm_1.1-26        pheatmap_1.0.12   </span></span>
-<span><span class="co">#  [5] ggrepel_0.9.5      ggplot2_3.5.0      Seurat_5.0.3       SeuratObject_5.0.1</span></span>
-<span><span class="co">#  [9] sp_2.1-4           Matrix_1.6-5      </span></span>
+<span><span class="co"># [1] gbcd_0.1-17     flashier_1.0.53 ebnm_1.1-26     Rtsne_0.17     </span></span>
+<span><span class="co"># [5] pheatmap_1.0.12 ggrepel_0.9.5   cowplot_1.1.3   ggplot2_3.5.0  </span></span>
+<span><span class="co"># [9] Matrix_1.6-5   </span></span>
 <span><span class="co"># </span></span>
 <span><span class="co"># loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#   [1] RColorBrewer_1.1-3     jsonlite_1.8.8         magrittr_2.0.3        </span></span>
-<span><span class="co">#   [4] spatstat.utils_3.0-4   farver_2.1.1           rmarkdown_2.26        </span></span>
-<span><span class="co">#   [7] fs_1.6.3               ragg_1.2.7             vctrs_0.6.5           </span></span>
-<span><span class="co">#  [10] ROCR_1.0-11            memoise_2.0.1          spatstat.explore_3.2-7</span></span>
-<span><span class="co">#  [13] SQUAREM_2021.1         mixsqp_0.3-54          progress_1.2.3        </span></span>
-<span><span class="co">#  [16] htmltools_0.5.7        truncnorm_1.0-9        sass_0.4.8            </span></span>
-<span><span class="co">#  [19] sctransform_0.4.1      parallelly_1.37.1      KernSmooth_2.23-22    </span></span>
-<span><span class="co">#  [22] bslib_0.6.1            fastTopics_0.6-165     htmlwidgets_1.6.4     </span></span>
-<span><span class="co">#  [25] desc_1.4.3             ica_1.0-3              plyr_1.8.9            </span></span>
-<span><span class="co">#  [28] plotly_4.10.4          zoo_1.8-12             cachem_1.0.8          </span></span>
-<span><span class="co">#  [31] igraph_2.0.3           mime_0.12              lifecycle_1.0.4       </span></span>
-<span><span class="co">#  [34] pkgconfig_2.0.3        R6_2.5.1               fastmap_1.1.1         </span></span>
-<span><span class="co">#  [37] fitdistrplus_1.1-11    future_1.33.2          shiny_1.8.0           </span></span>
-<span><span class="co">#  [40] digest_0.6.34          colorspace_2.1-0       patchwork_1.2.0       </span></span>
-<span><span class="co">#  [43] tensor_1.5             RSpectra_0.16-1        irlba_2.3.5.1         </span></span>
-<span><span class="co">#  [46] textshaping_0.3.7      labeling_0.4.3         invgamma_1.1          </span></span>
-<span><span class="co">#  [49] progressr_0.14.0       fansi_1.0.6            spatstat.sparse_3.0-3 </span></span>
-<span><span class="co">#  [52] deconvolveR_1.2-1      httr_1.4.7             polyclip_1.10-6       </span></span>
-<span><span class="co">#  [55] abind_1.4-5            compiler_4.3.3         horseshoe_0.2.0       </span></span>
-<span><span class="co">#  [58] withr_3.0.0            fastDummies_1.7.3      highr_0.10            </span></span>
-<span><span class="co">#  [61] MASS_7.3-60.0.1        scatterplot3d_0.3-44   gtools_3.9.5          </span></span>
-<span><span class="co">#  [64] tools_4.3.3            trust_0.1-8            lmtest_0.9-40         </span></span>
-<span><span class="co">#  [67] httpuv_1.6.14          future.apply_1.11.2    goftest_1.2-3         </span></span>
-<span><span class="co">#  [70] quadprog_1.5-8         glue_1.7.0             nlme_3.1-164          </span></span>
-<span><span class="co">#  [73] promises_1.2.1         grid_4.3.3             Rtsne_0.17            </span></span>
-<span><span class="co">#  [76] cluster_2.1.6          reshape2_1.4.4         generics_0.1.3        </span></span>
-<span><span class="co">#  [79] gtable_0.3.4           spatstat.data_3.0-4    tidyr_1.3.1           </span></span>
-<span><span class="co">#  [82] hms_1.1.3              data.table_1.15.2      utf8_1.2.4            </span></span>
-<span><span class="co">#  [85] spatstat.geom_3.2-9    RcppAnnoy_0.0.22       RANN_2.6.1            </span></span>
-<span><span class="co">#  [88] pillar_1.9.0           stringr_1.5.1          spam_2.10-0           </span></span>
-<span><span class="co">#  [91] RcppHNSW_0.6.0         later_1.3.2            softImpute_1.4-1      </span></span>
-<span><span class="co">#  [94] splines_4.3.3          dplyr_1.1.4            lattice_0.22-5        </span></span>
-<span><span class="co">#  [97] survival_3.5-8         deldir_2.0-4           tidyselect_1.2.0      </span></span>
-<span><span class="co"># [100] miniUI_0.1.1.1         pbapply_1.7-2          knitr_1.45            </span></span>
-<span><span class="co"># [103] gridExtra_2.3          scattermore_1.2        xfun_0.42             </span></span>
-<span><span class="co"># [106] matrixStats_1.2.0      stringi_1.8.3          lazyeval_0.2.2        </span></span>
-<span><span class="co"># [109] yaml_2.3.8             evaluate_0.23          codetools_0.2-19      </span></span>
-<span><span class="co"># [112] tibble_3.2.1           Polychrome_1.5.1       cli_3.6.2             </span></span>
-<span><span class="co"># [115] RcppParallel_5.1.7     uwot_0.1.16            xtable_1.8-4          </span></span>
-<span><span class="co"># [118] reticulate_1.36.1      systemfonts_1.0.6      munsell_0.5.0         </span></span>
-<span><span class="co"># [121] jquerylib_0.1.4        Rcpp_1.0.12            globals_0.16.3        </span></span>
-<span><span class="co"># [124] spatstat.random_3.2-3  png_0.1-8              parallel_4.3.3        </span></span>
-<span><span class="co"># [127] ellipsis_0.3.2         pkgdown_2.0.7          prettyunits_1.2.0     </span></span>
-<span><span class="co"># [130] dotCall64_1.1-1        listenv_0.9.1          viridisLite_0.4.2     </span></span>
-<span><span class="co"># [133] scales_1.3.0           ggridges_0.5.6         crayon_1.5.2          </span></span>
-<span><span class="co"># [136] leiden_0.4.3.1         purrr_1.0.2            rlang_1.1.3           </span></span>
-<span><span class="co"># [139] ashr_2.2-64            cowplot_1.1.3</span></span></code></pre></div>
+<span><span class="co">#  [1] tidyselect_1.2.0     viridisLite_0.4.2    dplyr_1.1.4         </span></span>
+<span><span class="co">#  [4] farver_2.1.1         fastmap_1.1.1        lazyeval_0.2.2      </span></span>
+<span><span class="co">#  [7] digest_0.6.34        lifecycle_1.0.4      invgamma_1.1        </span></span>
+<span><span class="co"># [10] magrittr_2.0.3       compiler_4.3.3       rlang_1.1.3         </span></span>
+<span><span class="co"># [13] sass_0.4.8           progress_1.2.3       tools_4.3.3         </span></span>
+<span><span class="co"># [16] utf8_1.2.4           yaml_2.3.8           data.table_1.15.2   </span></span>
+<span><span class="co"># [19] knitr_1.45           prettyunits_1.2.0    labeling_0.4.3      </span></span>
+<span><span class="co"># [22] htmlwidgets_1.6.4    scatterplot3d_0.3-44 RColorBrewer_1.1-3  </span></span>
+<span><span class="co"># [25] withr_3.0.0          purrr_1.0.2          desc_1.4.3          </span></span>
+<span><span class="co"># [28] grid_4.3.3           fansi_1.0.6          fastTopics_0.6-165  </span></span>
+<span><span class="co"># [31] colorspace_2.1-0     scales_1.3.0         gtools_3.9.5        </span></span>
+<span><span class="co"># [34] cli_3.6.2            rmarkdown_2.26       crayon_1.5.2        </span></span>
+<span><span class="co"># [37] ragg_1.2.7           generics_0.1.3       RcppParallel_5.1.7  </span></span>
+<span><span class="co"># [40] httr_1.4.7           pbapply_1.7-2        cachem_1.0.8        </span></span>
+<span><span class="co"># [43] splines_4.3.3        parallel_4.3.3       softImpute_1.4-1    </span></span>
+<span><span class="co"># [46] vctrs_0.6.5          jsonlite_1.8.8       hms_1.1.3           </span></span>
+<span><span class="co"># [49] mixsqp_0.3-54        irlba_2.3.5.1        horseshoe_0.2.0     </span></span>
+<span><span class="co"># [52] systemfonts_1.0.6    trust_0.1-8          plotly_4.10.4       </span></span>
+<span><span class="co"># [55] jquerylib_0.1.4      tidyr_1.3.1          glue_1.7.0          </span></span>
+<span><span class="co"># [58] pkgdown_2.0.7        uwot_0.1.16          Polychrome_1.5.1    </span></span>
+<span><span class="co"># [61] gtable_0.3.4         quadprog_1.5-8       munsell_0.5.0       </span></span>
+<span><span class="co"># [64] tibble_3.2.1         pillar_1.9.0         htmltools_0.5.7     </span></span>
+<span><span class="co"># [67] truncnorm_1.0-9      R6_2.5.1             textshaping_0.3.7   </span></span>
+<span><span class="co"># [70] evaluate_0.23        lattice_0.22-5       highr_0.10          </span></span>
+<span><span class="co"># [73] memoise_2.0.1        SQUAREM_2021.1       ashr_2.2-64         </span></span>
+<span><span class="co"># [76] bslib_0.6.1          Rcpp_1.0.12          deconvolveR_1.2-1   </span></span>
+<span><span class="co"># [79] xfun_0.42            fs_1.6.3             pkgconfig_2.0.3</span></span></code></pre></div>
 </div>
   </div>
 
