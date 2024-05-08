@@ -38,9 +38,9 @@ during the GEP signature matrix F estimation}
 
 \item{control}{List of control parameters with the following elements:
 \dQuote{warmstart}, a logical indicator specifying whether to use warmstart to initialize the prior g when solving EBNM subproblems,
-see the ebnm package for details;
+  see the ebnm package for details;
 \dQuote{extrapolate}, a logical indicator specifying whether to use extrapolation to accelerate backfitting GEP memberships,
-see the flashier package for details;
+  see the flashier package for details;
 \dQuote{corr_thres}, a numeric scalar between 0 and 1 such that we only keep l_k whose Pearson correlation with l-tilde_k exceeds corr_thres}
 
 \item{verbose}{an integer specifying whether and how to display progress updates,

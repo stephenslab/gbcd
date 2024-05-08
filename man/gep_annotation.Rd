@@ -9,15 +9,15 @@ gep_annotation(L, metadata)
 \arguments{
 \item{L}{cell by GEP matrix of GEP membership returned by \code{\link{fit_gbcd}}.}
 
-\item{metadata}{data frame containing at least a column \code{subject} indicating the patient identity of cells.
+\item{metadata}{data frame containing at least a column ``subject`` indicating the patient identity of cells.
 Each row contains a cell and the rownames must match those of \code{L}.}
 }
 \value{
 A data frame containing GEPs in rows and the following two columns:
-the column \code{patient_specific} reflects the degree of patient-specific expression of a GEP,
-and larger values indicate a GEP is more patient-specific rather than expressed in multiple patients.
-the column \code{between_patient_variation} quantifies how strongly a GEP's memberships vary between
-patients as opposed to within patients, and larger values indicate a GEP has larger between- than within-patient variation.
+  the column ``patient_specific`` reflects the degree of patient-specific expression of a GEP,
+  and larger values indicate a GEP is more patient-specific rather than expressed in multiple patients.
+  the column ``between_patient_variation`` quantifies how strongly a GEP's memberships vary between 
+  patients as opposed to within patients, and larger values indicate a GEP has larger between- than within-patient variation.
 }
 \description{
 Annotate the GEPs produced by GBCD using the patient identity information of cells
