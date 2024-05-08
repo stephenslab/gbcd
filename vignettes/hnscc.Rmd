@@ -8,55 +8,90 @@ output:
     toc_float: no
     highlight: textmate
     theme: readable
+vignette: >
+  %\VignetteIndexEntry{Dissecting tumor transcriptional heterogeneity from multi-tumor single-cell RNA-seq data using GBCD}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 Overview
---------------------
+--------
 
-This vignette shows how to apply "generalized binary covariance decomposition" (GBCD) to jointly analyze single-cell RNA-seq (scRNA-seq) data from *malignant cells* collected from multiple patients and/or studies, using the [gbcd][gbcd] package. 
+This vignette shows how to apply "generalized binary covariance
+decomposition" (GBCD) to jointly analyze single-cell RNA-seq
+(scRNA-seq) data from *malignant cells* collected from multiple
+patients and/or studies, using the [gbcd][gbcd] package.
 
-GBCD can effectively dissect tumor transcriptional heterogeneity into patient/study-specific and shared gene expression programs (GEPs). GBCD is "unsupervised" in that, unlike tumor-by-tumor (e.g., [Puram et al. (2017)][hnscc]) and many harmonization approaches (e.g., [Harmony][harmony], [Liger][liger]), it does not use information about which cell comes from which tumor or study. Instead, GBCD only requires the combined scRNA-seq data from all tumors, which are stored as an $N \times J$ matrix $Y$ of expression values with entries $y_{ij}$, where $i=1,\dots,N$ indexes malignant cells and $j=1,\dots,J$ indexes genes. In typical applications, $Y$ contains log-transformed pseudo-count-modified UMI counts ("log-pc counts").
+GBCD can effectively dissect tumor transcriptional heterogeneity into
+patient/study-specific and shared gene expression programs
+(GEPs). GBCD is "unsupervised" in that, unlike tumor-by-tumor (e.g.,
+[Puram et al. (2017)][hnscc]) and many harmonization approaches (e.g.,
+[Harmony][harmony], [Liger][liger]), it does not use information about
+which cell comes from which tumor or study. Instead, GBCD only
+requires the combined scRNA-seq data from all tumors, which are stored
+as an $N \times J$ matrix $Y$ of expression values with entries
+$y_{ij}$, where $i=1,\dots,N$ indexes malignant cells and
+$j=1,\dots,J$ indexes genes. In typical applications, $Y$ contains
+log-transformed pseudo-count-modified UMI counts ("log-pc counts").
 
-GBCD ultimately yields a decomposition of the expression data matrix $Y$ into matrices $L$ and $F$ such that $Y \approx L F^T$, or equivalently,
-$$y_{ij} \approx \sum_{k=1}^K l_{ik} f_{jk}.$$ 
-The $K$ components should be interpretable as GEPs, with $l_{ik}$ representing the membership of cell $i$ in GEP $k$, and $f_{jk}$ representing the effect of GEP $k$ on the expression of gene $j$. When $y_{ij}$ are log-pc counts, each $f_{jk}$ approximately represents the log-fold change (LFC) associated with membership in GEP $k$, so we refer to the $f_{jk}$ values as LFCs, and to the vector of LFCs $(f_{1k}, \dots, f_{Jk})^T$ as the "signature" of GEP $k$.
+GBCD ultimately yields a decomposition of the expression data matrix
+$Y$ into matrices $L$ and $F$ such that $Y \approx L F^T$, or
+equivalently, $$y_{ij} \approx \sum_{k=1}^K l_{ik} f_{jk}.$$ The $K$
+components should be interpretable as GEPs, with $l_{ik}$ representing
+the membership of cell $i$ in GEP $k$, and $f_{jk}$ representing the
+effect of GEP $k$ on the expression of gene $j$. When $y_{ij}$ are
+log-pc counts, each $f_{jk}$ approximately represents the log-fold
+change (LFC) associated with membership in GEP $k$, so we refer to the
+$f_{jk}$ values as LFCs, and to the vector of LFCs $(f_{1k}, \dots,
+f_{Jk})^T$ as the "signature" of GEP $k$.
 
 ```{r knitr-opts, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE, results = "hold", fig.align = "center", dpi = 120)
+knitr::opts_chunk$set(comment = "#", collapse = TRUE, results = "hold",
+                      fig.align = "center", dpi = 120)
 ```
 
-We begin our analysis by loading the needed R packages. Then we show how to apply GBCD to the HNSCC dataset and interpret the results.
+We begin our analysis by loading the needed R packages.
 
 ```{r load-pkgs, message=FALSE, warning=FALSE}
-library(Seurat)
+# library(Seurat)
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)
 library(ggrepel)
 library(pheatmap)
 library(gridExtra)
-devtools::load_all("/Users/yushaliu/Documents/git/gbcd")
+library(flashier)
+library(gbcd)
 ```
 
-
 The HNSCC dataset
---------------------
+-----------------
 
-This dataset contained gene expression data for $n=2,176$ malignant cells collected from primary tumors from 10 HNSCC patients and matching lymph node (LN) metastases from 5 of these patients. [Puram et al. (2017)][hnscc] found that each of these 10 patients clearly mapped to a molecular subtype of HNSCC, whose signatures were previously defined by analysis of bulk expression data of 279 [TCGA][tcga] HNSCC tumors. 
+This dataset contained gene expression data for $n=2,176$ malignant
+cells collected from primary tumors from 10 HNSCC patients and
+matching lymph node (LN) metastases from 5 of these
+patients. [Puram et al. (2017)][hnscc] found that each of these 10
+patients clearly mapped to a molecular subtype of HNSCC, whose
+signatures were previously defined by analysis of bulk expression data
+of 279 [TCGA][tcga] HNSCC tumors.
 
-Unlike more recently generated data sets, the HNSCC data were not UMI counts; rather, they were read counts produced by SMART-Seq2. Following [Puram et al. (2017)][hnscc], we defined the transformed counts as $y_{ij} = \log_2(1 + \mathrm{TPM}_{ij}/10)$, where $\mathrm{TPM}_{ij}$ was the transcript-per-million (TPM) value for gene $j$ in cell $i$. 
+Unlike more recently generated data sets, the HNSCC data were not UMI
+counts; rather, they were read counts produced by
+SMART-Seq2. Following [Puram et al. (2017)][hnscc], we defined the
+transformed counts as $y_{ij} = \log_2(1 + \mathrm{TPM}_{ij}/10)$,
+where $\mathrm{TPM}_{ij}$ was the transcript-per-million (TPM) value
+for gene $j$ in cell $i$.
 
 ```{r load-data}
-load("/Users/yushaliu/Documents/git/gbcd/data/hnscc.RData")
+data(hnscc)
 dim(Y)
 head(info)
 ```
 
+Visualize HNSCC data using t-SNE
+--------------------------------
 
-Visualize HNSCC data using *t*-SNE
----------------------------------
-
-```{r run-tSNE}
+```{r run-tSNE, eval=FALSE}
 hnscc <- CreateSeuratObject(counts = t(Y), project = "HNSCC", meta.data = info)
 hnscc <- FindVariableFeatures(hnscc, selection.method = "vst", nfeatures = 5000)
 all.genes <- rownames(hnscc)
@@ -65,38 +100,68 @@ hnscc <- RunPCA(hnscc, features = VariableFeatures(object = hnscc), npcs = 50, v
 hnscc <- RunTSNE(hnscc, dims = 1:50)
 ```
 
-We plot the 2-D *t*-SNE embedding of these $n=2,176$ malignant cells, which are colored by patient of origin and tumor stage (primary tumor, LN metastasis), and shaped by tumor molecular subtype. Due to the presence of strong inter-tumor heterogeneity, these cells demonstrate strong patient effects that are typical of cancer data; the major structure in the *t*-SNE visualization is the clustering of the cells by patient.
+We plot the 2-D *t*-SNE embedding of these $n=2,176$ malignant cells,
+which are colored by patient of origin and tumor stage (primary tumor,
+LN metastasis), and shaped by tumor molecular subtype. Due to the
+presence of strong inter-tumor heterogeneity, these cells demonstrate
+strong patient effects that are typical of cancer data; the major
+structure in the *t*-SNE visualization is the clustering of the cells
+by patient.
 
-```{r plot-tSNE, fig.height=5, fig.width=6}
+```{r plot-tSNE, fig.height=5, fig.width=6, eval=FALSE}
 DimPlot(hnscc, label = TRUE, repel = TRUE, pt.size = 1, reduction = "tsne", group.by = "subject", shape.by = "subtype", cols = subject_col) +
   guides(shape = guide_legend(override.aes = list(size = 3)), ncol = 1) + theme(text = element_text(size = 12)) +
   ggtitle("") + scale_shape_manual(values = c(15, 16, 18))
 ```
 
-
 Apply GBCD to estimate GEP memberships and signatures
----------------------------------
+-----------------------------------------------------
 
-To fit GBCD, users need to specify $Kmax$, an upper bound of the number of components $K$, just for initialization purposes; the final number of GEPs returned by GBCD is close to but often not equal to (and can be larger than) $Kmax$. Generally speaking, a larger $Kmax$ allows for identifying finer structure in tumor transcriptional heterogeneity, at the expense of higher computational cost. A good choice of $Kmax$ depends on the complexity of the analyzed data (e.g., the number of patients and studies contained), and is often unknown in advance. Based on our experience, a value of $Kmax$ between 10 and 40 usually works well, and users are encouraged to explore and compare the results for different values of $Kmax$. 
+To fit GBCD, users need to specify $Kmax$, an upper bound of the
+number of components $K$, just for initialization purposes; the final
+number of GEPs returned by GBCD is close to but often not equal to
+(and can be larger than) $Kmax$. Generally speaking, a larger $Kmax$
+allows for identifying finer structure in tumor transcriptional
+heterogeneity, at the expense of higher computational cost. A good
+choice of $Kmax$ depends on the complexity of the analyzed data (e.g.,
+the number of patients and studies contained), and is often unknown in
+advance. Based on our experience, a value of $Kmax$ between 10 and 40
+usually works well, and users are encouraged to explore and compare
+the results for different values of $Kmax$.
 
-Users also need to specify a prior for GEP membership values. GBCD assigns a "generalized binary" (GB) prior independently to each entry of $L$,
-$$l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \: N_{+} (\mu_k, \sigma_k^2),$$
-where the ratio $\sigma_k/\mu_k$ is fixed at some pre-specified small value. In this application we set $\sigma_k/\mu_k = 0.04$ for each $k$. A smaller ratio is generally recommended for larger datasets containing more cells, and a value between 0.01 to 0.1 usually works well.
+Users also need to specify a prior for GEP membership values. GBCD
+assigns a "generalized binary" (GB) prior independently to each entry
+of $L$, $$l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \: N_{+} (\mu_k,
+\sigma_k^2),$$ where the ratio $\sigma_k/\mu_k$ is fixed at some
+pre-specified small value. In this application we set $\sigma_k/\mu_k
+= 0.04$ for each $k$. A smaller ratio is generally recommended for
+larger datasets containing more cells, and a value between 0.01 to 0.1
+usually works well.
 
-For time reason, in the following call, we set `Kmax = 12`, and set the number of backfit iterations respectively to `maxiter1 = 100` (for initializing $L$), `maxiter2 = 50` (for estimating $L$), and `maxiter3 = 100` (for estimating $F$). However, users are encouraged to explore larger values of `Kmax` and set `maxiter1`, `maxiter2`, `maxiter3` to their default values, which take longer to run. 
+For time reason, in the following call, we set `Kmax = 12`, and set
+the number of backfit iterations respectively to `maxiter1 = 100` (for
+initializing $L$), `maxiter2 = 50` (for estimating $L$), and `maxiter3
+= 100` (for estimating $F$). However, users are encouraged to explore
+larger values of `Kmax` and set `maxiter1`, `maxiter2`, `maxiter3` to
+their default values, which take longer to run.
 
 ```{r fit-gbcd}
 res.gbcd <- fit_gbcd(Y = Y, Kmax = 12, maxiter1 = 100, maxiter2 = 50, maxiter3 = 100,
                      prior = flash_ebnm(prior_family = "generalized_binary", scale = 0.04), verbose = 0)
 ```
 
-Note that users can also specify other nonnegative priors for GEP membership values, as long as they are defined in the [ebnm][ebnm] package. For example, users can specify a point exponential prior by setting `prior = ebnm::ebnm_point_exponential` in the call to `fit_gbcd`. However, we find that the GB prior usually performs the best empirically to dissect tumor transcriptional heterogeneity from multiple samples and/or studies. 
+Note that users can also specify other nonnegative priors for GEP
+membership values, as long as they are defined in the [ebnm][ebnm]
+package. For example, users can specify a point exponential prior by
+setting `prior = ebnm::ebnm_point_exponential` in the call to
+`fit_gbcd`. However, we find that the GB prior usually performs the
+best empirically to dissect tumor transcriptional heterogeneity from
+multiple samples and/or studies.
 
-The above call takes about 10 minutes to run on a laptop.  
-
+The above call takes about 10 minutes to run on a laptop.
 
 Interpret GBCD results from the HNSCC data
----------------------------------
+------------------------------------------
 
 Take a look at a summary of the GBCD results.
 
@@ -106,9 +171,11 @@ summary(res.gbcd)
 
 
 GEP membership estimates
----------------------------------
+------------------------
 
-We now look at the matrix of GEP membership estimates $L$ with entries $l_{ik}$ representing the membership of cell $i$ in GEP $k$. Here we show the top rows of $L$.
+We now look at the matrix of GEP membership estimates $L$ with entries
+$l_{ik}$ representing the membership of cell $i$ in GEP $k$. Here we
+show the top rows of $L$.
 
 ```{r summary-L}
 head(round(res.gbcd$L, 3))
@@ -128,23 +195,42 @@ brks <- seq(0, 1, 0.02)
 pheatmap(res.gbcd$L[order(anno$subject), -c(1)], cluster_rows = FALSE, cluster_cols = FALSE, show_rownames = FALSE, annotation_row = anno, annotation_colors = anno_colors, annotation_names_row = FALSE, angle_col = 45, fontsize = 10, color = cols, breaks = brks, main = "")
 ```
 
-This heatmap shows the membership values of the $n=2,176$ cells (rows) for 20 GEPs (columns; intercept excluded). Cells are arranged top-to-bottom by tumor molecular subtype and patient of origin. Membership values are rescaled separately for GEPs so that the maximum membership for each GEP is always 1. 
+This heatmap shows the membership values of the $n=2,176$ cells (rows)
+for 20 GEPs (columns; intercept excluded). Cells are arranged
+top-to-bottom by tumor molecular subtype and patient of
+origin. Membership values are rescaled separately for GEPs so that the
+maximum membership for each GEP is always 1.
 
-From this heatmap, we see that GEPs 1-3 correspond closely to the molecular subtypes previously defined based on bulk RNA-seq data: GEP1 is largely active only in cells from the 2 classical patients, GEP2 is mainly active in cells from the 7 basal patients, and GEP3 is mainly active in cells from the 1 atypical patient. This demonstrates that GBCD can extract the molecular subtype information *de novo* from the single cell data alone. 
+From this heatmap, we see that GEPs 1-3 correspond closely to the
+molecular subtypes previously defined based on bulk RNA-seq data: GEP1
+is largely active only in cells from the 2 classical patients, GEP2 is
+mainly active in cells from the 7 basal patients, and GEP3 is mainly
+active in cells from the 1 atypical patient. This demonstrates that
+GBCD can extract the molecular subtype information *de novo* from the
+single cell data alone.
 
-Among other GEPs, some are active predominantly in an individual patient and can thus be interpreted as patient-specific GEPs, such as GEPs 8,9,11; other GEPs are shared across patients but do not correspond to molecular subtypes. The degree of patient-specific (vs. shared across patients) expression for each GEP can be quantified using the function `gep_annotation`.
-
+Among other GEPs, some are active predominantly in an individual
+patient and can thus be interpreted as patient-specific GEPs, such as
+GEPs 8,9,11; other GEPs are shared across patients but do not
+correspond to molecular subtypes. The degree of patient-specific
+(vs. shared across patients) expression for each GEP can be quantified
+using the function `gep_annotation`.
 
 GEP signature estimates
 ---------------------------------
 
-We next look at the matrix of GEP signature estimates $F$ with each entry $f_{jk}$ approximately representing the $\text{log}_2$-fold change associated with membership in GEP $k$. 
+We next look at the matrix of GEP signature estimates $F$ with each
+entry $f_{jk}$ approximately representing the $\text{log}_2$-fold
+change associated with membership in GEP $k$.
 
 ```{r summary-lfc}
 head(round(res.gbcd$F$lfc, 3))
 ```
 
-Create a volcano plot to visualize the gene signature for a given GEP (here we plot GEP2 as an example), which also makes use of measures of significance of LFCs produced by GBCD, including *z-score* and *local false sign rate*, or [*lfsr*][lfsr].
+Create a volcano plot to visualize the gene signature for a given GEP
+(here we plot GEP2 as an example), which also makes use of measures of
+significance of LFCs produced by GBCD, including *z-score* and *local
+false sign rate*, or [*lfsr*][lfsr].
 
 ```{r plot-lfc, fig.height=7.5, fig.width=11}
 pdat <- data.frame(gene = rownames(res.gbcd$F$lfc), 
@@ -154,7 +240,7 @@ pdat <- data.frame(gene = rownames(res.gbcd$F$lfc),
                    stringsAsFactors = FALSE)
 pdat <- transform(pdat, lfsr = cut(lfsr, c(-1, 0.001, 0.01, 0.05, Inf)))
 rows  <- with(pdat, which(!(abs(lfc) > quantile(abs(lfc), 0.998) | (z > 10))))
-pdat[rows, "gene"] <- ""    
+pdat[rows, "gene"] <- ""
 
 ggplot(pdat, aes(x = lfc, y = z, color = lfsr, label = gene)) + geom_point() + 
   geom_text_repel(color = "black", size = 3, segment.color = "black", segment.size = 0.25, min.segment.length = 0, max.overlaps = Inf, na.rm = TRUE) +
@@ -164,11 +250,10 @@ ggplot(pdat, aes(x = lfc, y = z, color = lfsr, label = gene)) + geom_point() +
   theme(plot.title = element_text(hjust = 0.5, size = 24), axis.text = element_text(size = 20), axis.title = element_text(size = 20), legend.title = element_text(size = 20), legend.text = element_text(size = 16), legend.position = "bottom") + ggtitle("Volcano plot of gene signature for GEP2")
 ```
 
-
 Session info
 ------------
 
-This is the version of R and the packages that were used to generate
+This was the version of R and the packages that were used to generate
 these results.
 
 ```{r session-info}
