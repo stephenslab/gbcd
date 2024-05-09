@@ -62,7 +62,7 @@ library(ggrepel)
 library(pheatmap)
 library(Rtsne)
 library(flashier)
-devtools::load_all("/Users/yushaliu/Documents/git/gbcd")
+library(gbcd)
 ```
 
 The HNSCC dataset
@@ -81,12 +81,8 @@ for gene $j$ in cell $i$.
 
 ```{r load-data}
 data(hnscc)
-Y <- hnscc$Y
-info <- hnscc$info
-dim(Y)
-head(info)
-# make sure the rows of Y and info match
-sum(rownames(Y) != rownames(info))
+dim(hnscc$Y)
+head(hnscc$info)
 ```
 
 Visualize HNSCC data using t-SNE
@@ -102,11 +98,11 @@ the cells by patient:
 
 ```{r plot-tSNE, fig.height=4, fig.width=5}
 set.seed(1)
-cols <- order(apply(Y,2,sd),decreasing = TRUE)
+cols <- order(apply(hnscc$Y,2,sd),decreasing = TRUE)
 cols <- cols[1:3000]
-res  <- Rtsne(as.matrix(Y[,cols]),normalize = TRUE)
+res  <- Rtsne(as.matrix(hnscc$Y[,cols]),normalize = TRUE)
 colnames(res$Y) <- c("tsne1","tsne2")
-pdat <- cbind(res$Y,info)
+pdat <- cbind(res$Y,hnscc$info)
 ggplot(pdat,aes(x = tsne1,y = tsne2,color = sample,shape = subtype)) +
   geom_point(size = 1) + scale_color_manual(values = hnscc$sample_col) +
   scale_shape_manual(values = c(15,16,18)) +
@@ -146,7 +142,7 @@ For the purposes of reducing the running time, here we set `Kmax =
 `maxiter3 = 50` (for estimating F).
 
 ```{r fit-gbcd, warning=FALSE}
-res.gbcd <- fit_gbcd(Y = Y, Kmax = 12, maxiter1 = 100,
+res.gbcd <- fit_gbcd(Y = hnscc$Y, Kmax = 12, maxiter1 = 100,
                      maxiter2 = 50, maxiter3 = 50, 
 					 prior = flash_ebnm(prior_family = "generalized_binary",
 					                    scale = 0.04))
@@ -179,9 +175,9 @@ add the sample and molecular subtype annotation of cells to visualize
 the GEP memberships:
 
 ```{r plot-L-1}
-anno <- data.frame(sample=info$sample, subtype=info$subtype)
+anno <- data.frame(sample = hnscc$info$sample, subtype = hnscc$info$subtype)
 rownames(anno) <- rownames(res.gbcd$L)
-anno_colors <- list(sample=hnscc$sample_col, subtype=hnscc$subtype_col)
+anno_colors <- list(sample = hnscc$sample_col, subtype = hnscc$subtype_col)
 cols <- colorRampPalette(c("gray96", "red"))(50)
 brks <- seq(0, 1, 0.02)
 ```
