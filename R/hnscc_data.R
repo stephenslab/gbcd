@@ -1,0 +1,54 @@
+#' @name hnscc_data
+#'
+#' @title Single-cell RNA-seq data from HNSCC tumor cells
+#'
+#' @docType data
+#'  
+#' @description This dataset contains transcriptome profiles of malignant 
+#'   cells generated via single-cell RNA sequencing that were collected from 
+#'   primary tumors from 10 HNSCC patients and matching lymph node (LN) 
+#'   metastases from 5 of these patients, described in Puram \emph{et al}
+#'   (2017). Puram \emph{et al.} (2017) found that each of these 10 patients 
+#'   clearly mapped to a molecular subtype of HNSCC, whose signatures were 
+#'   previously defined by analysis of bulk expression data of 279 TCGA HNSCC 
+#'   tumors. The data are normalized, log-transformed counts for 17,113 genes 
+#'   in 2,176 cells as $y_{ij} = \log_2(1 + \mathrm{TPM}_{ij}/10)$, where 
+#'   $\mathrm{TPM}_{ij}$ was the transcript-per-million (TPM) value for 
+#'   gene $j$ in cell $i$. Since the majority of the counts are zero, they are 
+#'   efficiently stored as a 2,176 x 17,113 sparse matrix. These data are used 
+#'   in the vignette illustrating how 'gbcd' can be used to analyze single-cell 
+#'   RNA-seq data derived from multiple tumor samples. 
+#'
+#' @format \code{hnscc} is a list with the following elements:
+#' 
+#' \describe{
+#'
+#'   \item{Y}{2,176 x 17,113 sparse matrix of normalized, log-transformed counts, 
+#'      with rows corresponding to cells and columns corresponding to genes. 
+#'      It is an object of class \code{"dgCMatrix"}).}
+#'
+#'   \item{info}{Data frame containing information about the cells, including 
+#'      the patient identity, primary/metastatic status, and molecular subtype of 
+#'      the tumor sample from which each cell was derived.}
+#'
+#'   \item{sample_col}{Color to indicate different tumor samples.}
+#' 
+#'   \item{subtype_col}{Color to indicate different molecular subtypes.}}
+#'
+#' 
+#' @references
+#' S.V. Puram \emph{et al} (2017). Single-cell transcriptomic analysis of 
+#' primary and metastatic tumor ecosystems in head and neck cancer
+#' \emph{Cell} \bold{171}, 1611-1624. \doi{10.1016/j.cell.2017.10.044}
+#' 
+#' @keywords data
+#'
+#' @examples
+#' library(Matrix)
+#' data(hnscc)
+#' cat(sprintf("Number of cells: %d\n",nrow(hnscc$Y)))
+#' cat(sprintf("Number of genes: %d\n",ncol(hnscc$Y)))
+#' cat(sprintf("Proportion of counts that are non-zero: %0.1f%%.\n",
+#'             100*mean(hnscc$Y > 0)))
+#' 
+NULL

@@ -1,6 +1,5 @@
 ---
 title: "Dissecting tumor transcriptional heterogeneity from multi-tumor single-cell RNA-seq data using GBCD"
-author: Yusha Liu
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -63,7 +62,7 @@ library(ggrepel)
 library(pheatmap)
 library(Rtsne)
 library(flashier)
-library(gbcd)
+devtools::load_all("/Users/yushaliu/Documents/git/gbcd")
 ```
 
 The HNSCC dataset
@@ -82,8 +81,12 @@ for gene $j$ in cell $i$.
 
 ```{r load-data}
 data(hnscc)
+Y <- hnscc$Y
+info <- hnscc$info
 dim(Y)
 head(info)
+# make sure the rows of Y and info match
+sum(rownames(Y)!=rownames(info))
 ```
 
 Visualize HNSCC data using t-SNE
@@ -100,12 +103,12 @@ the cells by patient:
 ```{r plot-tSNE, fig.height=4, fig.width=5}
 set.seed(1)
 cols <- order(apply(Y,2,sd),decreasing = TRUE)
-cols <- cols[1:1000]
+cols <- cols[1:3000]
 res  <- Rtsne(as.matrix(Y[,cols]),normalize = TRUE)
 colnames(res$Y) <- c("tsne1","tsne2")
 pdat <- cbind(res$Y,info)
-ggplot(pdat,aes(x = tsne1,y = tsne2,color = subject,shape = subtype)) +
-  geom_point() +
+ggplot(pdat,aes(x = tsne1,y = tsne2,color = sample,shape = subtype)) +
+  geom_point(size = 1) + scale_color_manual(values = hnscc$sample_col) +
   scale_shape_manual(values = c(15,16,18)) +
   theme_cowplot(font_size = 10)
 ```
@@ -134,14 +137,17 @@ pre-specified small value. In this application, we set $\sigma_k/\mu_k
 larger datasets containing more cells, and a value between 0.01 to 0.1
 usually works well.
 
+Note that the patient/dataset identity information of cells is *not* 
+needed to run GBCD. 
+
 For the purposes of reducing the running time, here we set `Kmax =
 12`, and we limit the number of backfitting iterations to `maxiter1 =
 100` (for initializing L), `maxiter2 = 50` (for estimating L), and
-`maxiter3 = 100` (for estimating F).
+`maxiter3 = 50` (for estimating F).
 
 ```{r fit-gbcd, warning=FALSE}
 res.gbcd <- fit_gbcd(Y = Y, Kmax = 12, maxiter1 = 100,
-                     maxiter2 = 50, maxiter3 = 100, 
+                     maxiter2 = 50, maxiter3 = 50, 
 					 prior = flash_ebnm(prior_family = "generalized_binary",
 					                    scale = 0.04))
 ```
@@ -153,19 +159,11 @@ prior by setting `prior = ebnm_point_exponential` in the call to
 best empirically to dissect tumor transcriptional heterogeneity from
 multiple samples and/or studies.
 
-Note that the above call to `fit_gbcd` may take 10 minutes or longer
-to complete.
+Note that the above call to `fit_gbcd` may take 10 minutes or slightly
+longer to complete on a laptop with 24GB RAM. 
 
-Interpret GBCD results from the HNSCC data
-------------------------------------------
 
-Take a look at a summary of the GBCD results.
-
-```{r summary-fit}
-summary(res.gbcd)
-```
-
-GEP membership estimates
+Interpret GEP membership estimates
 ------------------------
 
 We now look at the GEP membership estimates $L$, in which elements
@@ -181,9 +179,9 @@ add the sample and molecular subtype annotation of cells to visualize
 the GEP memberships:
 
 ```{r plot-L-1}
-anno <- data.frame(subject=info$subject, subtype=info$subtype)
+anno <- data.frame(sample=info$sample, subtype=info$subtype)
 rownames(anno) <- rownames(res.gbcd$L)
-anno_colors <- list(subject=subject_col, subtype=subtype_col)
+anno_colors <- list(sample=hnscc$sample_col, subtype=hnscc$subtype_col)
 cols <- colorRampPalette(c("gray96", "red"))(50)
 brks <- seq(0, 1, 0.02)
 ```
@@ -191,7 +189,7 @@ brks <- seq(0, 1, 0.02)
 Now we can plot the annotated heatmap of GEP memberships:
 
 ```{r plot-L-2, fig.height=5, fig.width=6}
-pheatmap(res.gbcd$L[order(anno$subject), -c(1)], cluster_rows = FALSE,
+pheatmap(res.gbcd$L[order(anno$sample), -c(1)], cluster_rows = FALSE,
          cluster_cols = FALSE, show_rownames = FALSE, annotation_row = anno,
 		 annotation_colors = anno_colors, annotation_names_row = FALSE,
 		 angle_col = 45, fontsize = 9, color = cols, breaks = brks,
