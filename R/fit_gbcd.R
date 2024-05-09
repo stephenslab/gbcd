@@ -47,7 +47,7 @@
 #'   signature matrix F.}
 #'
 #' @examples
-#' # Add a small example here.
+#' # Please see the vignettes for examples.
 #'
 #' @import Matrix
 #' @importFrom Matrix tcrossprod

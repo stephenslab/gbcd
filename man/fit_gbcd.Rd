@@ -66,6 +66,6 @@ Fit a generalized binary covariance decomposition (GBCD)
 to single cell RNA-seq data containing multiple tumors.
 }
 \examples{
-# Add a small example here.
+# Please see the vignettes for examples.
 
 }
