@@ -86,7 +86,7 @@ info <- hnscc$info
 dim(Y)
 head(info)
 # make sure the rows of Y and info match
-sum(rownames(Y)!=rownames(info))
+sum(rownames(Y) != rownames(info))
 ```
 
 Visualize HNSCC data using t-SNE
