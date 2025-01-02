@@ -14,7 +14,14 @@
 #'  
 #' @param prior Nonnegative prior for GEP memberships, usually the
 #'   generalized binary prior.
-#'   
+#'
+#' @param form_YYT If \code{form_YYT = TRUE}, the matrix cross-product
+#'   \code{tcrossprod(Y) is formed. For very large matrices \code{Y}
+#'   (with many rows), it can be expensive to directly form this matrix
+#'   cross-product, and in this case setting \code{form_YYT = FALSE} may
+#'   considerably reduce the running time, particularly if \code{Y} is
+#'   both large and very sparse.
+#' 
 #' @param maxiter1 Positive integer specifying the maximum number of
 #'   backfit iterations during the GEP membership matrix L
 #'   initialization.
@@ -63,8 +70,8 @@
 #' @export
 #' 
 fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary, 
-                      maxiter1 = 500, maxiter2 = 200, maxiter3 = 500,
-                      control = list(), verbose = 1) {
+                      form_YYT = TRUE, maxiter1 = 500, maxiter2 = 200,
+                      maxiter3 = 500, control = list(), verbose = 1) {
 
   control <- modifyList(fit_gbcd_control_default(), control, keep.null = TRUE)
   extrapolate <- control$extrapolate
@@ -74,13 +81,10 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   ### form the covariance matrix from the cell by gene matrix of gene expression data
   print("Form cell by cell covariance matrix...")
   start_time = proc.time()
-  if (2 * ncol(Y) * mean(Y > 0) < nrow(Y)) {
-    # Use lowrank plus sparse representation:
-    dat <- list(U = Y, D = rep(1 / ncol(Y), ncol(Y)), V = Y)
-  } else {
-    # Form covariance matrix:
+  if (form_YYT)
     dat <- Matrix::tcrossprod(Y) / ncol(Y)
-  }
+  else 
+    dat <- list(U = Y, D = rep(1 / ncol(Y), ncol(Y)), V = Y)
   fit.init <- flash_init(dat, var_type = 0)
   runtime = proc.time() - start_time
   print(runtime)
