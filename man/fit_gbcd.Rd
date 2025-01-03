@@ -22,9 +22,9 @@ fit_gbcd_control_default()
 \item{Y}{Cell x gene matrix of normalized and log-transformed gene
 expression data.}
 
-\item{Kmax}{Positive integer (at least 2) specifying an upper
-bound on the number of GEPs. Note that Kmax is approximately but
-often not exactly the final number of GEPs.}
+\item{Kmax}{Integer 2 or greater used to determine the number of
+final number of factors in the GBCD. The final number of factors is
+never greater than \code{2*Kmax - 1}.}
 
 \item{prior}{Nonnegative prior for GEP memberships, usually the
 generalized binary prior.}
