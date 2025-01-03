@@ -118,12 +118,15 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
     ) |>
     flash_backfit(extrapolate = FALSE, warmstart = warmstart, maxiter = 25, verbose = verbose)
 
-  ### keep at most Kmax factors based on proportion of variance explained and refit EB-NMF to covariance matrix
+  ### keep at most Kmax factors based on proportion of variance
+  ### explained and refit EB-NMF to covariance matrix
   kset <- (fit.cov$pve > 0)
   kall <- 1:fit.cov$n_factors
   if(!all(kset))
     fit.cov <- flash_factors_remove(fit.cov, kset=kall[!kset])
-  fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov, extrapolate = extrapolate, warmstart = warmstart, maxiter = maxiter2, verbose = verbose)$fl
+  fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov,
+                            extrapolate = extrapolate, warmstart = warmstart,
+                            maxiter = maxiter2, verbose = verbose)$fl
   runtime = proc.time() - start_time
   print(runtime)
   
