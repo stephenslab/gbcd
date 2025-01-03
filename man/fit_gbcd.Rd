@@ -30,6 +30,13 @@ never greater than \code{2*Kmax - 1}.}
 \item{prior}{Nonnegative prior for GEP memberships, usually the
 generalized binary prior.}
 
+\item{form_YYT}{If \code{form_YYT = TRUE}, the matrix cross-product
+\code{tcrossprod(Y)} is formed. For very large matrices \code{Y}
+(with many rows), it can be expensive to directly form this matrix
+cross-product, and in this case setting \code{form_YYT = FALSE} may
+considerably reduce the running time, particularly if \code{Y} is
+both large and very sparse.}
+
 \item{maxiter1}{Positive integer specifying the maximum number of
 backfit iterations during the GEP membership matrix L
 initialization.}

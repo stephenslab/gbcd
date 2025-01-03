@@ -16,7 +16,7 @@
 #'   generalized binary prior.
 #'
 #' @param form_YYT If \code{form_YYT = TRUE}, the matrix cross-product
-#'   \code{tcrossprod(Y) is formed. For very large matrices \code{Y}
+#'   \code{tcrossprod(Y)} is formed. For very large matrices \code{Y}
 #'   (with many rows), it can be expensive to directly form this matrix
 #'   cross-product, and in this case setting \code{form_YYT = FALSE} may
 #'   considerably reduce the running time, particularly if \code{Y} is
