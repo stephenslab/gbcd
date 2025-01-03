@@ -53,6 +53,9 @@
 #' \item{F}{List containing the posterior summaries of the GEP
 #'   signature matrix F.}
 #'
+#' \item{fit.cov}{A \dQuote{flash} object containing the final
+#'   covariance decomposition.}
+#'
 #' @examples
 #' # Please see the vignettes for examples.
 #'
@@ -141,7 +144,7 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   res <- fit_ebmf_to_Y(Y, fit.cov, corr_thres, maxiter3)
   runtime = proc.time() - start_time
   print(runtime)
-
+  res$fit.cov <- fit.cov
   return(res)
 }
 

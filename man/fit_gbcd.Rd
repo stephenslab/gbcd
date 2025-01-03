@@ -9,6 +9,7 @@ fit_gbcd(
   Y,
   Kmax,
   prior = ebnm::ebnm_generalized_binary,
+  form_YYT = TRUE,
   maxiter1 = 500,
   maxiter2 = 200,
   maxiter3 = 500,
@@ -60,6 +61,9 @@ the GEP membership matrix L.}
 
 \item{F}{List containing the posterior summaries of the GEP
   signature matrix F.}
+
+\item{fit.cov}{A \dQuote{flash} object containing the final
+  covariance decomposition.}
 }
 \description{
 Fit a generalized binary covariance decomposition (GBCD)
