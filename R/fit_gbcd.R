@@ -8,9 +8,9 @@
 #' @param Y Cell x gene matrix of normalized and log-transformed gene
 #'   expression data.
 #' 
-#' @param Kmax Positive integer (at least 2) specifying an upper
-#'   bound on the number of GEPs. Note that Kmax is approximately but
-#'   often not exactly the final number of GEPs.
+#' @param Kmax Integer 2 or greater used to determine the number of
+#'   final number of factors in the GBCD. The final number of factors is
+#'   never greater than \code{2*Kmax - 1}.
 #'  
 #' @param prior Nonnegative prior for GEP memberships, usually the
 #'   generalized binary prior.
@@ -85,7 +85,8 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   runtime = proc.time() - start_time
   print(runtime)
 
-  ### fit EBMF with point laplace prior to covariance matrix without considering the diagonal component
+  ### fit EBMF with point laplace prior to covariance matrix without
+  ### considering the diagonal component
   print("Initialize GEP membership matrix L...")
   start_time = proc.time()
   fit.cov <- fit.init |>
@@ -93,7 +94,8 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
     flash_greedy(Kmax = Kmax - 1, ebnm_fn = ebnm_point_laplace) |>
     flash_backfit(maxiter = 25, verbose = verbose)
 
-  ### fit EBMF with point laplace prior to covariance matrix with the diagonal component
+  ### fit EBMF with point laplace prior to covariance matrix with the
+  ### diagonal component
   fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov, maxiter = maxiter1, verbose = verbose)$fl
   runtime = proc.time() - start_time
   print(runtime)
@@ -112,18 +114,24 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
       init = lapply(cov.init, function(x) x[, -c(kmax), drop = FALSE]),
       ebnm_fn = prior
     ) |>
-    flash_backfit(extrapolate = FALSE, warmstart = warmstart, maxiter = 25, verbose = verbose)
+    flash_backfit(extrapolate = FALSE, warmstart = warmstart, maxiter = 25,
+                  verbose = verbose)
 
-  ### keep at most Kmax factors based on proportion of variance explained and refit EB-NMF to covariance matrix
+  ### Remove factors with PVE of zero then refit EB-NMF to covariance
+  ### matrix.
   kset <- (fit.cov$pve > 0)
   kall <- 1:fit.cov$n_factors
   if(!all(kset))
     fit.cov <- flash_factors_remove(fit.cov, kset=kall[!kset])
-  fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov, extrapolate = extrapolate, warmstart = warmstart, maxiter = maxiter2, verbose = verbose)$fl
+  fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov,
+                            extrapolate = extrapolate, warmstart = warmstart,
+                            maxiter = maxiter2, verbose = verbose)$fl
   runtime = proc.time() - start_time
   print(runtime)
   
-  ### estimate GEP signatures by fitting EB-SNMF to gene expression data matrix with fixed L estimated from covariance decomposition above
+  ### estimate GEP signatures by fitting EB-SNMF to gene expression
+  ### data matrix with fixed L estimated from covariance decomposition
+  ### above
   print("Estimate GEP signature matrix F...")
   start_time = proc.time()
   res <- fit_ebmf_to_Y(Y, fit.cov, corr_thres, maxiter3)
