@@ -97,7 +97,7 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
 
   ### fit EBMF with point laplace prior to covariance matrix with the
   ### diagonal component
-  tol <- sqrt(.Machine$double.eps) * prod(get.dims(flash_fit(fit.cov)))
+  tol <- sqrt(.Machine$double.eps) * nrow(Y) * nrow(Y)
   fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov, maxiter = maxiter1, tol = pmin(tol, 1), verbose = verbose)$fl
   runtime = proc.time() - start_time
   print(runtime)
