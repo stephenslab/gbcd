@@ -24,10 +24,16 @@ expression data.}
 
 \item{Kmax}{Integer 2 or greater used to determine the number of
 final number of factors in the GBCD. The final number of factors is
-never greater than \code{2*Kmax - 1}.}
+often close to \code{Kmax}, and is never greater than \code{2*Kmax
+- 1}.}
 
 \item{prior}{Nonnegative prior for GEP memberships, usually the
-generalized binary prior.}
+generalized binary prior. The ratio \eqn{\rho = \sigma_k/\mu_k} in
+the generalized binary prior can be controlled via the
+\code{\link[flashier]{flash_ebnm}} function from flashier,
+\code{flash_ebnm(prior_family = "generalized_binary", scale =
+rho)}. See also the \code{\link[ebnm]{ebnm_generalized_binary}}
+function from the ebnm package for more information.}
 
 \item{maxiter1}{Positive integer specifying the maximum number of
 backfit iterations during the GEP membership matrix L

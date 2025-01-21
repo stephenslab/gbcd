@@ -18,7 +18,7 @@ to single cell RNA-seq data containing multiple tumors."><!-- mathjax --><script
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">gbcd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-02</span>
       </span>
     </div>
 
@@ -77,14 +77,20 @@ expression data.</p></dd>
 
 
 <dt>Kmax</dt>
-<dd><p>Positive integer (at least 2) specifying an upper
-bound on the number of GEPs. Note that Kmax is approximately but
-often not exactly the final number of GEPs.</p></dd>
+<dd><p>Integer 2 or greater used to determine the number of
+final number of factors in the GBCD. The final number of factors is
+often close to <code>Kmax</code>, and is never greater than <code>2*Kmax
+- 1</code>.</p></dd>
 
 
 <dt>prior</dt>
 <dd><p>Nonnegative prior for GEP memberships, usually the
-generalized binary prior.</p></dd>
+generalized binary prior. The ratio \(\rho = \sigma_k/\mu_k\) in
+the generalized binary prior can be controlled via the
+<code><a href="https://rdrr.io/pkg/flashier/man/flash_ebnm.html" class="external-link">flash_ebnm</a></code> function from flashier,
+<code>flash_ebnm(prior_family = "generalized_binary", scale =
+rho)</code>. See also the <code><a href="https://rdrr.io/pkg/ebnm/man/ebnm_generalized_binary.html" class="external-link">ebnm_generalized_binary</a></code>
+function from the ebnm package for more information.</p></dd>
 
 
 <dt>maxiter1</dt>
@@ -138,7 +144,7 @@ the GEP membership matrix L.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Add a small example here.</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Please see the vignettes for examples.</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"></span>
 </code></pre></div>

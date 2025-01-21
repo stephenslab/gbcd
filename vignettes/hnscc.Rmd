@@ -112,25 +112,31 @@ ggplot(pdat,aes(x = tsne1,y = tsne2,color = sample,shape = subtype)) +
 Estimate GEP memberships and signatures using GBCD
 --------------------------------------------------
 
-To fit a GBCD model, "Kmax" needs to set. It is an upper bound of
-the number of components, $K$. This is just for initialization
-purposes; the final number of GEPs returned by GBCD is close to but
-often not equal to (and can be larger than) Kmax. Generally speaking,
-a larger Kmax allows for identifying finer structure in tumor
-transcriptional heterogeneity, at the expense of higher computational
-cost. A good choice of Kmax depends on the complexity of the analyzed
-data (e.g., the number of patients and studies contained), and is
-often unknown in advance. Based on our experience, a value of Kmax
-between 10 and 40 usually works well, and users are encouraged to
-explore and compare the results for different values of Kmax.
+To fit a GBCD model, "Kmax" needs to set. The final number of GEPs
+returned by GBCD is often close to "Kmax", but can never be greater
+than `2*Kmax - 1`. Generally speaking, a larger Kmax allows for
+identifying finer structure in tumor transcriptional heterogeneity, at
+the expense of higher computational cost. A good choice of Kmax
+depends on the complexity of the analyzed data (e.g., the number of
+patients and studies contained), and is often unknown in
+advance. Based on our experience, a value of Kmax between 10 and 40
+usually works well, and users are encouraged to explore and compare
+the results for different values of Kmax. (Note: For results presented
+in [the paper][liu-2025], we set Kmax = 24 for the HNSCC data and Kmax
+= 32 for the PDAC data.)
 
 Users also need to specify a prior for GEP membership values. GBCD
 assigns a "generalized binary" (GB) prior independently to each entry
-of $L$, $$l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \: N_{+} (\mu_k,
-\sigma_k^2),$$ where the ratio $\sigma_k/\mu_k$ is fixed at some
-pre-specified small value. In this application, we set $\sigma_k/\mu_k
-= 0.04$ for each $k$. A smaller ratio is generally recommended for
-larger datasets containing more cells, and a value between 0.01 to 0.1
+of $L$,
+$$
+l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \: N_{+} (\mu_k, \sigma_k^2),
+$$
+where the ratio $\sigma_k/\mu_k$ is fixed at some pre-specified small
+value. In this example (with about 2,000 cells), we set
+$\sigma_k/\mu_𝑘 = 0.04$ for all 𝑘. A smaller ratio is generally
+recommended for larger datasets containing more cells; for example, we
+set $\sigma_𝑘/\mu_𝑘$ to 0.02 for the PDAC data set (with about 36,000
+cells).  In practice, we have found that a setting between 0.02 to 0.1
 usually works well.
 
 Note that the patient/dataset identity information of cells is *not* 
@@ -264,6 +270,7 @@ these results.
 sessionInfo()
 ```
 
+[liu-2025]: https://doi.org/10.1038/s41588-024-01997-z
 [ahlmann-eltze-huber-2023]: https://doi.org/10.1038/s41592-023-01814-1
 [hnscc]: https://doi.org/10.1016/j.cell.2017.10.044
 [harmony]: https://portals.broadinstitute.org/harmony/
