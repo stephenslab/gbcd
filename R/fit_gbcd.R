@@ -81,7 +81,7 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
     # Form covariance matrix:
     dat <- Matrix::tcrossprod(Y) / ncol(Y)
   }
-  Y2_val <- sum((t(Y) %*% Y / ncol(Y))^2)
+  Y2_val <- sum((Matrix::crossprod(Y) / ncol(Y))^2)
   fit.init <- flash_init(dat, var_type = 0, Y2val = Y2_val)
   runtime = proc.time() - start_time
   print(runtime)
@@ -97,7 +97,8 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
 
   ### fit EBMF with point laplace prior to covariance matrix with the
   ### diagonal component
-  fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov, maxiter = maxiter1, verbose = verbose)$fl
+  tol <- sqrt(.Machine$double.eps) * prod(get.dims(flash_fit(fit.cov)))
+  fit.cov <- fit_ebmf_to_YY(dat = dat, fl = fit.cov, maxiter = maxiter1, tol = pmin(tol, 1), verbose = verbose)$fl
   runtime = proc.time() - start_time
   print(runtime)
 
