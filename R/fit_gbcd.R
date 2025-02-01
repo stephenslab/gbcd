@@ -81,8 +81,7 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
     # Form covariance matrix:
     dat <- Matrix::tcrossprod(Y) / ncol(Y)
   }
-  Y2_val <- sum((Matrix::crossprod(Y) / ncol(Y))^2)
-  fit.init <- flash_init(dat, var_type = 0, Y2val = Y2_val)
+  fit.init <- flash_init(dat, var_type = 0)
   runtime = proc.time() - start_time
   print(runtime)
 
