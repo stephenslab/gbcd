@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">gbcd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-02</span>
       </span>
     </div>
 
@@ -69,7 +69,7 @@
       <h1 data-toc-skip>Dissecting tumor transcriptional heterogeneity
 from multi-tumor single-cell RNA-seq data using GBCD</h1>
             
-            <h4 data-toc-skip class="date">2024-05-09</h4>
+            <h4 data-toc-skip class="date">2025-01-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/stephenslab/gbcd/blob/HEAD/vignettes/hnscc.Rmd" class="external-link"><code>vignettes/hnscc.Rmd</code></a></small>
       <div class="hidden name"><code>hnscc.Rmd</code></div>
@@ -174,25 +174,28 @@ patient:</p>
 <div class="section level2">
 <h2 id="estimate-gep-memberships-and-signatures-using-gbcd">Estimate GEP memberships and signatures using GBCD<a class="anchor" aria-label="anchor" href="#estimate-gep-memberships-and-signatures-using-gbcd"></a>
 </h2>
-<p>To fit a GBCD model, “Kmax” needs to set. It is an upper bound of the
-number of components, <span class="math inline">\(K\)</span>. This is
-just for initialization purposes; the final number of GEPs returned by
-GBCD is close to but often not equal to (and can be larger than) Kmax.
-Generally speaking, a larger Kmax allows for identifying finer structure
-in tumor transcriptional heterogeneity, at the expense of higher
-computational cost. A good choice of Kmax depends on the complexity of
-the analyzed data (e.g., the number of patients and studies contained),
-and is often unknown in advance. Based on our experience, a value of
-Kmax between 10 and 40 usually works well, and users are encouraged to
-explore and compare the results for different values of Kmax.</p>
+<p>To fit a GBCD model, “Kmax” needs to set. The final number of GEPs
+returned by GBCD is often close to “Kmax”, but can never be greater than
+<code>2*Kmax - 1</code>. Generally speaking, a larger Kmax allows for
+identifying finer structure in tumor transcriptional heterogeneity, at
+the expense of higher computational cost. A good choice of Kmax depends
+on the complexity of the analyzed data (e.g., the number of patients and
+studies contained), and is often unknown in advance. Based on our
+experience, a value of Kmax between 10 and 40 usually works well, and
+users are encouraged to explore and compare the results for different
+values of Kmax. (Note: For results presented in <a href="https://doi.org/10.1038/s41588-024-01997-z" class="external-link">the paper</a>, we set
+Kmax = 24 for the HNSCC data and Kmax = 32 for the PDAC data.)</p>
 <p>Users also need to specify a prior for GEP membership values. GBCD
 assigns a “generalized binary” (GB) prior independently to each entry of
-<span class="math inline">\(L\)</span>, <span class="math display">\[l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \:
-N_{+} (\mu_k,
-\sigma_k^2),\]</span> where the ratio <span class="math inline">\(\sigma_k/\mu_k\)</span> is fixed at some
-pre-specified small value. In this application, we set <span class="math inline">\(\sigma_k/\mu_k = 0.04\)</span> for each <span class="math inline">\(k\)</span>. A smaller ratio is generally
-recommended for larger datasets containing more cells, and a value
-between 0.01 to 0.1 usually works well.</p>
+<span class="math inline">\(L\)</span>, <span class="math display">\[
+l_{ik}\sim (1-\pi_k^l) \delta_0 + \pi_k^l \: N_{+} (\mu_k, \sigma_k^2),
+\]</span> where the ratio <span class="math inline">\(\sigma_k/\mu_k\)</span> is fixed at some
+pre-specified small value. In this example (with about 2,000 cells), we
+set <span class="math inline">\(\sigma_k/\mu_𝑘 = 0.04\)</span> for all
+𝑘. A smaller ratio is generally recommended for larger datasets
+containing more cells; for example, we set <span class="math inline">\(\sigma_𝑘/\mu_𝑘\)</span> to 0.02 for the PDAC data
+set (with about 36,000 cells). In practice, we have found that a setting
+between 0.02 to 0.1 usually works well.</p>
 <p>Note that the patient/dataset identity information of cells is
 <em>not</em> needed to run GBCD.</p>
 <p>For the purposes of reducing the running time, here we set
@@ -207,7 +210,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span>                                        scale <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># [1] "Form cell by cell covariance matrix..."</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  15.207   0.072  16.125 </span></span>
+<span><span class="co">#  15.025   0.080  15.119 </span></span>
 <span><span class="co"># [1] "Initialize GEP membership matrix L..."</span></span>
 <span><span class="co"># Adding factor 1 to flash object...</span></span>
 <span><span class="co"># Wrapping up...</span></span>
@@ -241,7 +244,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  35.554   2.770  39.815 </span></span>
+<span><span class="co">#  34.413   2.620  37.068 </span></span>
 <span><span class="co"># [1] "Estimate GEP membership matrix L..."</span></span>
 <span><span class="co"># Backfitting 23 factors (tolerance: 7.06e-02)...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+05...</span></span>
@@ -257,7 +260,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  64.059   3.096  67.728 </span></span>
+<span><span class="co">#  63.274   3.109  66.571 </span></span>
 <span><span class="co"># [1] "Estimate GEP signature matrix F..."</span></span>
 <span><span class="co"># Backfitting 23 factors (tolerance: 5.55e-01)...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
@@ -266,7 +269,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co"># 314.585  13.651 331.738</span></span></code></pre></div>
+<span><span class="co"># 311.922  13.982 327.862</span></span></code></pre></div>
 <p>Note that users can also specify other nonnegative priors for GEP
 membership values. For example, users can specify a point exponential
 prior by setting <code>prior = ebnm_point_exponential</code> in the call
@@ -406,7 +409,7 @@ these results.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># R version 4.3.3 (2024-02-29)</span></span>
 <span><span class="co"># Platform: aarch64-apple-darwin20 (64-bit)</span></span>
-<span><span class="co"># Running under: macOS Sonoma 14.4.1</span></span>
+<span><span class="co"># Running under: macOS Sonoma 14.7.1</span></span>
 <span><span class="co"># </span></span>
 <span><span class="co"># Matrix products: default</span></span>
 <span><span class="co"># BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib </span></span>
@@ -422,12 +425,12 @@ these results.</p>
 <span><span class="co"># [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co"># </span></span>
 <span><span class="co"># other attached packages:</span></span>
-<span><span class="co"># [1] gbcd_0.1-19     flashier_1.0.53 ebnm_1.1-26     Rtsne_0.17     </span></span>
+<span><span class="co"># [1] gbcd_0.2-02     flashier_1.0.54 ebnm_1.1-34     Rtsne_0.17     </span></span>
 <span><span class="co"># [5] pheatmap_1.0.12 ggrepel_0.9.5   cowplot_1.1.3   ggplot2_3.5.0  </span></span>
 <span><span class="co"># [9] Matrix_1.6-5   </span></span>
 <span><span class="co"># </span></span>
 <span><span class="co"># loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#  [1] tidyselect_1.2.0     viridisLite_0.4.2    dplyr_1.1.4         </span></span>
+<span><span class="co">#  [1] tidyselect_1.2.1     viridisLite_0.4.2    dplyr_1.1.4         </span></span>
 <span><span class="co">#  [4] farver_2.1.1         fastmap_1.1.1        lazyeval_0.2.2      </span></span>
 <span><span class="co">#  [7] digest_0.6.34        lifecycle_1.0.4      invgamma_1.1        </span></span>
 <span><span class="co"># [10] magrittr_2.0.3       compiler_4.3.3       rlang_1.1.3         </span></span>
@@ -436,7 +439,7 @@ these results.</p>
 <span><span class="co"># [19] knitr_1.45           prettyunits_1.2.0    labeling_0.4.3      </span></span>
 <span><span class="co"># [22] htmlwidgets_1.6.4    scatterplot3d_0.3-44 RColorBrewer_1.1-3  </span></span>
 <span><span class="co"># [25] withr_3.0.0          purrr_1.0.2          desc_1.4.3          </span></span>
-<span><span class="co"># [28] grid_4.3.3           fansi_1.0.6          fastTopics_0.6-165  </span></span>
+<span><span class="co"># [28] grid_4.3.3           fansi_1.0.6          fastTopics_0.6-193  </span></span>
 <span><span class="co"># [31] colorspace_2.1-0     scales_1.3.0         gtools_3.9.5        </span></span>
 <span><span class="co"># [34] cli_3.6.2            rmarkdown_2.26       crayon_1.5.2        </span></span>
 <span><span class="co"># [37] ragg_1.2.7           generics_0.1.3       RcppParallel_5.1.7  </span></span>
@@ -446,14 +449,15 @@ these results.</p>
 <span><span class="co"># [49] mixsqp_0.3-54        irlba_2.3.5.1        horseshoe_0.2.0     </span></span>
 <span><span class="co"># [52] systemfonts_1.0.6    trust_0.1-8          plotly_4.10.4       </span></span>
 <span><span class="co"># [55] jquerylib_0.1.4      tidyr_1.3.1          glue_1.7.0          </span></span>
-<span><span class="co"># [58] pkgdown_2.0.7        uwot_0.1.16          Polychrome_1.5.1    </span></span>
+<span><span class="co"># [58] pkgdown_2.0.7        uwot_0.2.2.9000      Polychrome_1.5.1    </span></span>
 <span><span class="co"># [61] gtable_0.3.4         quadprog_1.5-8       munsell_0.5.0       </span></span>
 <span><span class="co"># [64] tibble_3.2.1         pillar_1.9.0         htmltools_0.5.7     </span></span>
 <span><span class="co"># [67] truncnorm_1.0-9      R6_2.5.1             textshaping_0.3.7   </span></span>
 <span><span class="co"># [70] evaluate_0.23        lattice_0.22-5       highr_0.10          </span></span>
-<span><span class="co"># [73] memoise_2.0.1        SQUAREM_2021.1       ashr_2.2-64         </span></span>
-<span><span class="co"># [76] bslib_0.6.1          Rcpp_1.0.12          deconvolveR_1.2-1   </span></span>
-<span><span class="co"># [79] xfun_0.42            fs_1.6.3             pkgconfig_2.0.3</span></span></code></pre></div>
+<span><span class="co"># [73] RhpcBLASctl_0.23-42  memoise_2.0.1        SQUAREM_2021.1      </span></span>
+<span><span class="co"># [76] ashr_2.2-66          bslib_0.6.1          Rcpp_1.0.12         </span></span>
+<span><span class="co"># [79] deconvolveR_1.2-1    xfun_0.42            fs_1.6.3            </span></span>
+<span><span class="co"># [82] pkgconfig_2.0.3</span></span></code></pre></div>
 </div>
   </div>
 
