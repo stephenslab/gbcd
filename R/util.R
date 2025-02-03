@@ -64,6 +64,7 @@ fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
 #' @importFrom stats cor
 #' @importFrom stats lm
 #' @importFrom stats aov
+#' @importFrom stats sd
 #' @importFrom Matrix crossprod
 #' @importFrom ebnm ebnm_generalized_binary
 #' @importFrom ebnm ebnm_point_laplace
