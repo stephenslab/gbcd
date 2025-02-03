@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">gbcd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-02</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-05</span>
       </span>
     </div>
 
@@ -69,7 +69,7 @@
       <h1 data-toc-skip>Dissecting tumor transcriptional heterogeneity
 from multi-tumor single-cell RNA-seq data using GBCD</h1>
             
-            <h4 data-toc-skip class="date">2025-01-21</h4>
+            <h4 data-toc-skip class="date">2025-02-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/stephenslab/gbcd/blob/HEAD/vignettes/hnscc.Rmd" class="external-link"><code>vignettes/hnscc.Rmd</code></a></small>
       <div class="hidden name"><code>hnscc.Rmd</code></div>
@@ -210,7 +210,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span>                                        scale <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># [1] "Form cell by cell covariance matrix..."</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  15.025   0.080  15.119 </span></span>
+<span><span class="co">#  15.240   0.105  15.360 </span></span>
 <span><span class="co"># [1] "Initialize GEP membership matrix L..."</span></span>
 <span><span class="co"># Adding factor 1 to flash object...</span></span>
 <span><span class="co"># Wrapping up...</span></span>
@@ -244,7 +244,7 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  34.413   2.620  37.068 </span></span>
+<span><span class="co">#  35.227   2.987  38.850 </span></span>
 <span><span class="co"># [1] "Estimate GEP membership matrix L..."</span></span>
 <span><span class="co"># Backfitting 23 factors (tolerance: 7.06e-02)...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+05...</span></span>
@@ -260,16 +260,16 @@ iterations to <code>maxiter1 = 100</code> (for initializing L),
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co">#  63.274   3.109  66.571 </span></span>
+<span><span class="co">#  64.485   3.669  69.059 </span></span>
 <span><span class="co"># [1] "Estimate GEP signature matrix F..."</span></span>
-<span><span class="co"># Backfitting 23 factors (tolerance: 5.55e-01)...</span></span>
+<span><span class="co"># Backfitting 21 factors (tolerance: 5.55e-01)...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+03...</span></span>
 <span><span class="co">#   Difference between iterations is within 1.0e+02...</span></span>
 <span><span class="co">#   --Maximum number of iterations reached!</span></span>
 <span><span class="co"># Wrapping up...</span></span>
 <span><span class="co"># Done.</span></span>
 <span><span class="co">#    user  system elapsed </span></span>
-<span><span class="co"># 311.922  13.982 327.862</span></span></code></pre></div>
+<span><span class="co"># 299.433  13.861 320.305</span></span></code></pre></div>
 <p>Note that users can also specify other nonnegative priors for GEP
 membership values. For example, users can specify a point exponential
 prior by setting <code>prior = ebnm_point_exponential</code> in the call
@@ -350,26 +350,26 @@ vs. shared expression for each GEP can be quantified using the
 log-fold change associated with membership in GEP <span class="math inline">\(k\)</span> (with the base-2 logarithm).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res.gbcd</span><span class="op">$</span><span class="cn">F</span><span class="op">$</span><span class="va">lfc</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#              Baseline   GEP1   GEP2   GEP3   GEP4   GEP5   GEP6   GEP7   GEP8</span></span>
-<span><span class="co"># C9orf152        0.000  0.064  0.000  0.004  0.000  0.003  0.000  0.000  0.000</span></span>
-<span><span class="co"># ELMO2           2.056  0.000 -0.466  0.715  0.003 -0.273 -0.065  0.015 -0.051</span></span>
-<span><span class="co"># PNMA1           1.933  0.003 -1.326  0.035 -0.002  0.019 -0.043 -0.019 -0.018</span></span>
-<span><span class="co"># MMP2            0.763 -0.468  2.441 -0.897 -0.005  0.786 -0.597 -0.004 -1.206</span></span>
-<span><span class="co"># TMEM216         2.141  1.046 -0.652  0.021  0.006 -0.012 -0.115 -0.021 -0.002</span></span>
-<span><span class="co"># TRAF3IP2-AS1    0.216  0.293  0.000  0.588  0.001  0.132  0.000  0.003  0.000</span></span>
+<span><span class="co">#              Baseline   GEP1   GEP2  GEP3   GEP4   GEP5   GEP6   GEP7   GEP8</span></span>
+<span><span class="co"># C9orf152        0.000  0.064  0.000 0.005  0.000  0.003  0.000  0.000  0.000</span></span>
+<span><span class="co"># ELMO2           2.058 -0.001 -0.479 0.041  0.003 -0.307 -0.066  0.019 -0.062</span></span>
+<span><span class="co"># PNMA1           1.928  0.003 -1.335 0.050 -0.001  0.018 -0.046 -0.018 -0.022</span></span>
+<span><span class="co"># MMP2            0.428 -0.013  2.589 0.017 -0.004  0.815 -0.724  0.006 -1.533</span></span>
+<span><span class="co"># TMEM216         2.125  1.064 -0.646 0.028  0.007 -0.012 -0.119 -0.021 -0.002</span></span>
+<span><span class="co"># TRAF3IP2-AS1    0.215  0.293  0.000 0.587  0.001  0.132  0.000  0.003  0.000</span></span>
 <span><span class="co">#               GEP9  GEP10  GEP11  GEP12 GEP13  GEP14  GEP15  GEP16  GEP17</span></span>
 <span><span class="co"># C9orf152     0.000 -0.003 -0.004  0.000 0.002  0.084  0.000  0.000  0.000</span></span>
-<span><span class="co"># ELMO2        0.081  0.005 -0.764 -0.036 0.348 -0.352 -0.566 -0.019 -0.003</span></span>
-<span><span class="co"># PNMA1        2.154  0.065 -0.017  0.339 0.731  0.012 -0.048  0.014 -0.002</span></span>
-<span><span class="co"># MMP2         0.051 -0.031  0.026 -0.867 0.800  0.348 -0.508  0.035 -0.297</span></span>
-<span><span class="co"># TMEM216      1.137 -0.088 -0.401 -0.262 0.189 -0.605 -0.013 -0.429 -0.055</span></span>
-<span><span class="co"># TRAF3IP2-AS1 0.005  0.013  0.011 -0.004 0.025  0.449 -0.002  0.019 -0.001</span></span>
+<span><span class="co"># ELMO2        0.081  0.007 -0.806 -0.036 0.389 -0.293 -0.584 -0.020 -0.003</span></span>
+<span><span class="co"># PNMA1        2.161  0.067 -0.019  0.343 0.737  0.012 -0.048  0.014 -0.003</span></span>
+<span><span class="co"># MMP2         0.329 -0.028  0.022 -0.614 0.861  0.155 -0.439  0.025 -0.542</span></span>
+<span><span class="co"># TMEM216      1.147 -0.087 -0.401 -0.243 0.194 -0.607 -0.013 -0.431 -0.066</span></span>
+<span><span class="co"># TRAF3IP2-AS1 0.005  0.014  0.011 -0.003 0.026  0.449 -0.002  0.019 -0.001</span></span>
 <span><span class="co">#               GEP18  GEP19  GEP20</span></span>
 <span><span class="co"># C9orf152      0.014 -0.001  0.000</span></span>
-<span><span class="co"># ELMO2        -0.104  0.060  0.019</span></span>
-<span><span class="co"># PNMA1        -0.007 -0.008  0.022</span></span>
-<span><span class="co"># MMP2         -1.498 -0.020  3.791</span></span>
-<span><span class="co"># TMEM216      -0.037 -0.012  0.029</span></span>
+<span><span class="co"># ELMO2        -0.140  0.045  0.016</span></span>
+<span><span class="co"># PNMA1        -0.008 -0.007  0.023</span></span>
+<span><span class="co"># MMP2         -1.462  0.003  3.942</span></span>
+<span><span class="co"># TMEM216      -0.037 -0.011  0.031</span></span>
 <span><span class="co"># TRAF3IP2-AS1 -0.002  0.042 -0.001</span></span></code></pre></div>
 <p>Here we create a volcano plot to visualize the gene signature for a
 given GEP (using GEP2 as an example). This plot makes use of posterior
@@ -425,7 +425,7 @@ these results.</p>
 <span><span class="co"># [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co"># </span></span>
 <span><span class="co"># other attached packages:</span></span>
-<span><span class="co"># [1] gbcd_0.2-02     flashier_1.0.54 ebnm_1.1-34     Rtsne_0.17     </span></span>
+<span><span class="co"># [1] gbcd_0.2-05     flashier_1.0.55 ebnm_1.1-34     Rtsne_0.17     </span></span>
 <span><span class="co"># [5] pheatmap_1.0.12 ggrepel_0.9.5   cowplot_1.1.3   ggplot2_3.5.0  </span></span>
 <span><span class="co"># [9] Matrix_1.6-5   </span></span>
 <span><span class="co"># </span></span>
@@ -439,7 +439,7 @@ these results.</p>
 <span><span class="co"># [19] knitr_1.45           prettyunits_1.2.0    labeling_0.4.3      </span></span>
 <span><span class="co"># [22] htmlwidgets_1.6.4    scatterplot3d_0.3-44 RColorBrewer_1.1-3  </span></span>
 <span><span class="co"># [25] withr_3.0.0          purrr_1.0.2          desc_1.4.3          </span></span>
-<span><span class="co"># [28] grid_4.3.3           fansi_1.0.6          fastTopics_0.6-193  </span></span>
+<span><span class="co"># [28] grid_4.3.3           fansi_1.0.6          fastTopics_0.7-07   </span></span>
 <span><span class="co"># [31] colorspace_2.1-0     scales_1.3.0         gtools_3.9.5        </span></span>
 <span><span class="co"># [34] cli_3.6.2            rmarkdown_2.26       crayon_1.5.2        </span></span>
 <span><span class="co"># [37] ragg_1.2.7           generics_0.1.3       RcppParallel_5.1.7  </span></span>
