@@ -13,9 +13,10 @@ If you find the gbcd R package or any of the source code in this
 repository useful for your work, please cite:
 
 > Y. Liu, P. Carbonetto, J. Willwerscheid, S. A. Oakes, K. F. Macleod
-> and M. Stephens (2023). [Dissecting tumor transcriptional
+> and M. Stephens. [Dissecting tumor transcriptional
 > heterogeneity from single-cell RNA-seq data by generalized binary
-> covariance decomposition.][gbcd-biorxiv] bioRxiv 2023.08.15.553436.
+> covariance decomposition.](https://doi.org/10.1038/s41588-024-01997-z)
+> *Nature Genetics* **57**, 263-273 (2025).
 
 ## Quick Start
 
