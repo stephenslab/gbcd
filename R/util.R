@@ -73,6 +73,7 @@ fit_ebmf_to_YY <- function (dat, fl, extrapolate = TRUE, warmstart = TRUE,
 #' @importFrom flashier flash_factors_init
 #' @importFrom flashier flash_factors_fix
 #' @importFrom flashier flash_backfit
+#' @importFrom flashier ldf
 #' 
 fit_ebmf_to_Y <- function(Y, fit.cov, corr_thres, maxiter, 
                           ldf_type = c("identity","cov")) {
