@@ -72,7 +72,7 @@ it still holds true that \eqn{LDF'} is approximately \eqn{Y}.}
 A list including the following elements:
 
 \item{L}{cell x GEP matrix containing the posterior estimates of
-the GEP membership matrix L.}
+  the GEP membership matrix L.}
 
 \item{F}{List containing the posterior summaries of the GEP
   signature matrix F. Note that these posterior estimates are

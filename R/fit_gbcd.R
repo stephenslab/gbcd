@@ -164,7 +164,6 @@ fit_gbcd <- function (Y, Kmax, prior = ebnm::ebnm_generalized_binary,
   res <- fit_ebmf_to_Y(Y, fit.cov, corr_thres, maxiter3, ldf_type)
   runtime = proc.time() - start_time
   print(runtime)
-
   return(res)
 }
 
